@@ -21,7 +21,10 @@
                 @auth
                     <nav class="flex items-center space-x-6">
                         <span class="text-gray-600 font-medium">
-                            Hola: <span class="text-indigo-600">{{ auth()->user()->name }}</span>
+                            Hola:
+                            <a href="{{ route('post.index') }}" class="text-indigo-600 hover:underline">
+                                {{ auth()->user()->name }}
+                            </a>
                         </span>
                         
                         <form method="POST" action=" {{ route('logout')}}">

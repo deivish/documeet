@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('numero_documento', 15)->unique();
             $table->string('cargo', 100);
             $table->string('organizacion', 150);
-            $table->string('name', 100); // nombre
+            $table->string('name', 100);
             $table->string('apellidos', 100);
             $table->string('email')->unique();
             $table->string('celular', 15);
