@@ -51,4 +51,19 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    /**
+     * Reuniones a las que el usuario fue invitado.
+     */
+    public function reunionesInvitado()
+    {
+        return $this->belongsToMany(Reunion::class, 'reunion_user');
+    }
+
+    // Reuniones que el usuario ha organizado
+    public function reunionesCreadas()
+    {
+        return $this->hasMany(Reunion::class, 'user_id');
+    }
+
 }
