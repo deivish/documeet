@@ -6,6 +6,8 @@ use App\Models\User;
 use App\Models\Reunion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Notifications\InvitacionReunion;
+
 
 class ReunionController extends Controller
 {
@@ -72,7 +74,10 @@ class ReunionController extends Controller
         // Evitar duplicados
         $reunion->invitados()->syncWithoutDetaching([$usuario->id]);
     
-        return back()->with('success', 'Invitado agregado correctamente.');
+        // Enviar notificación
+        $usuario->notify(new InvitacionReunion($reunion));
+
+        return back()->with('success', 'Invitado agregado correctamente y notificado por correo.');
     }
 
 
