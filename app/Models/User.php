@@ -57,7 +57,9 @@ class User extends Authenticatable
      */
     public function reunionesInvitado()
     {
-        return $this->belongsToMany(Reunion::class, 'reunion_user');
+        return $this->belongsToMany(Reunion::class, 'reunion_user')
+        ->withPivot('rol')
+        ->withTimestamps();
     }
 
     // Reuniones que el usuario ha organizado

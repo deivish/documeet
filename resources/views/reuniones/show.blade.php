@@ -15,5 +15,6 @@
             Ver/Agregar Invitados
         </a>
     </div>
+    
 </div>
 @endsection

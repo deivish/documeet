@@ -17,9 +17,14 @@ class ReunionController extends Controller
     {
         $user = User::with(['reunionesCreadas', 'reunionesInvitado'])->find(Auth::id());
 
+        // Filtrar reuniones donde fue invitado, pero no las que él mismo creó
+        $reunionesInvitado = $user->reunionesInvitado->filter(function ($reunion) use ($user) {
+            return $reunion->user_id !== $user->id;
+        });
+
         return view('reuniones.index', [
             'reunionesOrganizadas' => $user->reunionesCreadas,
-            'reunionesInvitado' => $user->reunionesInvitado,
+            'reunionesInvitado' => $reunionesInvitado,
         ]);
     }
 
@@ -43,6 +48,9 @@ class ReunionController extends Controller
             'user_id' => Auth::id(),
         ]);
 
+        // Asocia al creador como "moderador" en la tabla pivote
+        $reunion->invitados()->attach(Auth::id(), ['rol' => 'moderador']);
+
         return redirect()->route('reuniones.index')->with('success', 'Reunión creada con éxito.');
     }
 
@@ -56,6 +64,49 @@ class ReunionController extends Controller
         return view('reuniones.show', compact('reunion'));
     }
 
+    public function edit(Reunion $reunion)
+{
+    // Verificar si el usuario actual es el moderador
+    if ($reunion->user_id !== Auth::id()) {
+        abort(403, 'No tienes permiso para editar esta reunión.');
+    }
+
+    return view('reuniones.create', compact('reunion'));
+}
+
+public function update(Request $request, Reunion $reunion)
+{
+    if ($reunion->user_id !== Auth::id()) {
+        abort(403, 'No tienes permiso para modificar esta reunión.');
+    }
+
+    $request->validate([
+        'titulo' => 'required|string|max:255',
+        'descripcion' => 'nullable|string',
+        'fecha_hora' => 'required|date',
+    ]);
+
+    $reunion->update([
+        'titulo' => $request->titulo,
+        'descripcion' => $request->descripcion,
+        'fecha_hora' => $request->fecha_hora,
+    ]);
+
+    return redirect()->route('reuniones.index')->with('success', 'Reunión actualizada con éxito.');
+}
+
+public function destroy(Reunion $reunion)
+{
+    if ($reunion->user_id !== Auth::id()) {
+        abort(403, 'No tienes permiso para eliminar esta reunión.');
+    }
+
+    $reunion->delete();
+
+    return redirect()->route('reuniones.index')->with('success', 'Reunión eliminada.');
+}
+
+
     public function invitados(Reunion $reunion)
     {
         $invitados = $reunion->invitados;
@@ -67,6 +118,11 @@ class ReunionController extends Controller
     // Agregar invitados a las reuniones programadas
     public function agregarInvitado(Request $request, Reunion $reunion)
     {
+        // Verificar que el usuario autenticado es el moderador
+        if ($reunion->user_id !== Auth::id()) {
+            abort(403, 'Solo el moderador puede agregar invitados.');
+        }
+
         $request->validate([
             'email' => 'required|email',
         ]);
@@ -76,6 +132,16 @@ class ReunionController extends Controller
         if (!$usuario) {
             return back()->withErrors(['email' => 'Usuario no encontrado']);
         }
+
+        // Verificar si ya está invitado
+        $yaInvitado = $reunion->invitados()->where('user_id', $usuario->id)->exists();
+        if ($yaInvitado) {
+            return back()->withErrors(['email' => 'Este usuario ya ha sido invitado a la reunión.']);
+        }
+
+        // Agregar al usuario como invitado con rol
+        $reunion->invitados()->attach($usuario->id, ['rol' => 'invitado']);
+
     
         // Evitar duplicados
         $reunion->invitados()->syncWithoutDetaching([$usuario->id]);

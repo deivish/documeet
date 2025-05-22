@@ -30,7 +30,9 @@ class Reunion extends Model
     // Invitados a la reunión (usuarios)
     public function invitados()
     {
-        return $this->belongsToMany(User::class, 'reunion_user');
+        return $this->belongsToMany(User::class, 'reunion_user')
+                ->withPivot('rol') // permite acceder al campo 'rol'
+                ->withTimestamps();
     }
 
 }
