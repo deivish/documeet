@@ -7,6 +7,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Notifications\Messages\BroadcastMessage;
 
 class InvitacionReunion extends Notification
 {
@@ -28,7 +29,7 @@ class InvitacionReunion extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return ['mail', 'database', 'broadcast'];
     }
 
     /**
@@ -54,7 +55,18 @@ class InvitacionReunion extends Notification
     public function toArray(object $notifiable): array
     {
         return [
-            //
+            'titulo' => $this->reunion->titulo,
+            'fecha_hora' => $this->reunion->fecha_hora,
+            'reunion_id' => $this->reunion->id,
         ];
     }
+
+    public function toBroadcast($notifiable)
+    {
+    return new BroadcastMessage([
+        'titulo' => $this->reunion->titulo,
+        'fecha_hora' => $this->reunion->fecha_hora,
+        'reunion_id' => $this->reunion->id,
+    ]);
+}
 }

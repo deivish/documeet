@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Notifications\InvitacionReunion;
 
 
+
 class ReunionController extends Controller
 {
     //
@@ -47,6 +48,11 @@ class ReunionController extends Controller
 
     public function show(Reunion $reunion)
     {
+        // Marcar como leídas las notificaciones relacionadas con esta reunión
+        Auth::user()->unreadNotifications
+        ->where('data.reunion_id', $reunion->id)
+        ->each->markAsRead();
+
         return view('reuniones.show', compact('reunion'));
     }
 
@@ -76,6 +82,8 @@ class ReunionController extends Controller
     
         // Enviar notificación
         $usuario->notify(new InvitacionReunion($reunion));
+
+        broadcast(new InvitacionReunion($reunion, $usuario->id))->toOthers();
 
         return back()->with('success', 'Invitado agregado correctamente y notificado por correo.');
     }

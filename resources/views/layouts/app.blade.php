@@ -3,10 +3,17 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="csrf-token" content="{{ csrf_token() }}">
+
+
+        @auth
+        <meta name="user-id" content="{{ auth()->id() }}">
+        @endauth
+
         <title>DocuMeet - </title>
         {{-- @yield('titulo') --}}
         @vite(['resources/css/app.css', 'resources/js/app.js'])
-        <script src="{{ asset('js/app.js') }}" defer></script>
+        {{-- <script src="{{ asset('js/app.js') }}" defer></script> --}}
     </head>
     <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
 
@@ -18,21 +25,58 @@
                     <a href="/"><span class="text-xl font-semibold text-indigo-600">DocuMeet</span></a>
                 </div>
  
-                @auth
-                    <nav class="flex items-center space-x-6">
-                        <span class="text-gray-600 font-medium">
-                            Hola:
-                            <a href="{{ route('post.index') }}" class="text-indigo-600 hover:underline">
-                                {{ auth()->user()->name }}
-                            </a>
-                        </span>
-                        
-                        <form method="POST" action=" {{ route('logout')}}">
-                            @csrf
-                            <button type="submit" class="text-gray-600 hover:text-indigo-600 font-medium">Cerrar Sesión</button>
-                        </form>
-                    </nav>
-                @endauth
+                    @auth
+        <nav class="flex items-center space-x-6">
+            {{-- Notificación (campana) --}}
+            <div class="relative">
+                <button id="notification-bell" onclick="document.getElementById('notification-dropdown').classList.toggle('hidden')"
+                class="relative text-gray-600 hover:text-indigo-600 focus:outline-none cursor-pointer">
+                🔔
+                @php
+                $unreadCount = auth()->user()->unreadNotifications->count();
+                @endphp
+                <span id="notification-count"
+                class="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full px-1 {{ $unreadCount == 0 ? 'hidden' : '' }}">
+                {{ $unreadCount }}
+                </span>
+                </button>
+
+
+            
+                {{-- Dropdown de notificaciones --}}
+                <div id="notification-dropdown"
+                    class="absolute right-0 mt-2 w-80 bg-white border border-gray-200 rounded shadow-lg hidden z-50">
+                    <div class="p-4 text-sm font-semibold border-b">Notificaciones</div>
+                    <ul id="notification-list" class="max-h-64 overflow-y-auto divide-y">
+                        @forelse (auth()->user()->unreadNotifications as $notification)
+                            <li class="p-4 text-sm text-gray-700 hover:bg-gray-100">
+                                <a href="{{ route('reuniones.show', $notification->data['reunion_id']) }}">
+                                    <strong>{{ $notification->data['titulo'] }}</strong><br>
+                                    Fecha: {{ \Carbon\Carbon::parse($notification->data['fecha_hora'])->format('d/m/Y H:i') }}
+                                </a>
+                            </li>
+                        @empty
+                            <li class="p-4 text-gray-500 text-sm">Sin notificaciones</li>
+                        @endforelse
+                    </ul>
+                    
+                </div>
+            </div>
+            
+
+            <span class="text-gray-600 font-medium">
+                Hola:
+                <a href="{{ route('post.index') }}" class="text-indigo-600 hover:underline">
+                    {{ auth()->user()->name }}
+                </a>
+            </span>
+
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <button type="submit" class="text-gray-600 hover:text-indigo-600 font-medium">Cerrar Sesión</button>
+            </form>
+        </nav>
+    @endauth
 
                 @guest
                     <nav class="space-x-4">
