@@ -25,7 +25,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/reuniones', [ReunionController::class, 'index'])->name('reuniones.index');
     Route::get('/reuniones/create', [ReunionController::class, 'create'])->name('reuniones.create');
     Route::post('/reuniones', [ReunionController::class, 'store'])->name('reuniones.store');
-    Route::get('/reuniones/{reunion}', [ReunionController::class, 'show'])->name('reuniones.show');
+    Route::get('/reuniones/{id}', [ReunionController::class, 'show'])->name('reuniones.show');
     Route::get('/reuniones/{reunion}/invitados', [ReunionController::class, 'invitados'])->name('reuniones.invitados');
     Route::post('/reuniones/{reunion}/invitados', [ReunionController::class, 'agregarInvitado'])->name('reuniones.agregarInvitado');
     Route::get('/reuniones/invitaciones', [ReunionController::class, 'invitaciones'])->name('reuniones.invitaciones');

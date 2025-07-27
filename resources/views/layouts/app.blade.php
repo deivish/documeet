@@ -94,6 +94,20 @@
 
         {{-- Contenido --}}
         <main class="flex-grow container mx-auto px-4 py-8">
+
+            @if(session('error'))
+                <div 
+                    x-data="{ show: true }"
+                    x-init="setTimeout(() => show = false, 5000)"
+                    x-show="show"
+                    x-transition
+                    class="fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded-lg shadow-lg z-50">
+                    {{ session('error') }}
+                </div>
+            @endif
+
+
+
             @yield('content')
         </main>
         
@@ -103,6 +117,7 @@
                 &copy; {{ date('Y') }} DocuMeet. Todos los derechos reservados.
             </div>
         </footer>
-    
+
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     </body>
 </html>

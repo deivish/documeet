@@ -54,15 +54,29 @@ class ReunionController extends Controller
         return redirect()->route('reuniones.index')->with('success', 'Reunión creada con éxito.');
     }
 
-    public function show(Reunion $reunion)
-    {
-        // Marcar como leídas las notificaciones relacionadas con esta reunión
-        Auth::user()->unreadNotifications
+    public function show($id)
+{
+    $reunion = Reunion::find($id);
+
+    if (!$reunion) {
+        // Eliminar notificaciones relacionadas si la reunión no existe
+        Auth::user()->notifications()
+            ->where('data->reunion_id', $id)
+            ->delete();
+
+        // Redireccionar con mensaje de error (que se autodestruye gracias a Alpine.js)
+        return redirect()->route('reuniones.index')
+            ->with('error', 'La reunión ya no está disponible o fue eliminada.');
+    }
+
+    // Marcar como leídas las notificaciones relacionadas con esta reunión
+    Auth::user()->unreadNotifications
         ->where('data.reunion_id', $reunion->id)
         ->each->markAsRead();
 
-        return view('reuniones.show', compact('reunion'));
-    }
+    return view('reuniones.show', compact('reunion'));
+}
+
 
     public function edit(Reunion $reunion)
 {
