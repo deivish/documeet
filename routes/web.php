@@ -25,6 +25,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/reuniones', [ReunionController::class, 'index'])->name('reuniones.index');
     Route::get('/reuniones/create', [ReunionController::class, 'create'])->name('reuniones.create');
     Route::post('/reuniones', [ReunionController::class, 'store'])->name('reuniones.store');
+
+    Route::get('/reuniones/historial', [ReunionController::class, 'historial'])->name('reuniones.historial');
+    Route::get('/reuniones/historial/{reunion}', [ReunionController::class, 'detalleHistorial'])->name('reuniones.detalle_historial');
+
+
     Route::get('/reuniones/{id}', [ReunionController::class, 'show'])->name('reuniones.show');
     Route::get('/reuniones/{reunion}/invitados', [ReunionController::class, 'invitados'])->name('reuniones.invitados');
     Route::post('/reuniones/{reunion}/invitados', [ReunionController::class, 'agregarInvitado'])->name('reuniones.agregarInvitado');
@@ -32,4 +37,5 @@ Route::middleware(['auth'])->group(function () {
     Route::get('reuniones/{reunion}/edit', [ReunionController::class, 'edit'])->name('reuniones.edit');
     Route::put('reuniones/{reunion}', [ReunionController::class, 'update'])->name('reuniones.update');
     Route::delete('reuniones/{reunion}', [ReunionController::class, 'destroy'])->name('reuniones.destroy');
+
 });

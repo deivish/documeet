@@ -7,12 +7,15 @@ use App\Models\Reunion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Notifications\InvitacionReunion;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+
 
 
 
 class ReunionController extends Controller
 {
     //
+    use AuthorizesRequests;
     public function index()
     {
         $user = User::with(['reunionesCreadas', 'reunionesInvitado'])->find(Auth::id());
@@ -167,6 +170,38 @@ public function destroy(Reunion $reunion)
 
         return back()->with('success', 'Invitado agregado correctamente y notificado por correo.');
     }
+        //Historias de reuniones
+        public function historial()
+    {
+        $user = Auth::user();
+
+        $reunionesOrganizadas = Reunion::withTrashed()
+        ->where('user_id', $user->id)
+        ->where('fecha_hora', '<', now())
+        ->orderBy('fecha_hora', 'desc')
+        ->get();
+
+        $reunionesInvitado = Reunion::withTrashed()
+            ->whereHas('invitados', function ($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })
+            ->where('user_id', '!=', $user->id) // para evitar duplicado si también es el creador
+            ->where('fecha_hora', '<', now())
+            ->orderBy('fecha_hora', 'desc')
+            ->get();
+
+        return view('reuniones.history', compact('reunionesOrganizadas', 'reunionesInvitado'));
+    }
+
+    public function detalleHistorial(Reunion $reunion)
+    {
+        // $this->authorize('verReunionHistorial', $reunion); // opcional: política de acceso
+
+        $invitados = $reunion->invitados()->get();
+
+        return view('reuniones.detail_history', compact('reunion', 'invitados'));
+    }
+
 
 
 }
