@@ -28,6 +28,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/reuniones/historial', [ReunionController::class, 'historial'])->name('reuniones.historial');
     Route::get('/reuniones/historial/{reunion}', [ReunionController::class, 'detalleHistorial'])->name('reuniones.detalle_historial');
+    Route::post('/reuniones/{reunion}/actividades', [ReunionController::class, 'storeActividad'])->name('actividades.store');
 
 
     Route::get('/reuniones/{id}', [ReunionController::class, 'show'])->name('reuniones.show');

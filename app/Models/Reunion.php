@@ -37,4 +37,10 @@ class Reunion extends Model
                 ->withTimestamps();
     }
 
+    public function actividades()
+    {
+        return $this->hasMany(Actividad::class);
+    }
+
+
 }

@@ -42,6 +42,11 @@ class ReunionController extends Controller
             'titulo' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
             'fecha_hora' => 'required|date',
+            'actividades' => 'nullable|array',
+            'actividades.*.nombre' => 'required_with:actividades|string|max:255',
+            'actividades.*.descripcion' => 'required_with:actividades|string',
+            'actividades.*.responsable' => 'required_with:actividades|string|max:255',
+            'actividades.*.fecha_entrega' => 'required_with:actividades|date',
         ]);
 
         $reunion = Reunion::create([
@@ -53,6 +58,13 @@ class ReunionController extends Controller
 
         // Asocia al creador como "moderador" en la tabla pivote
         $reunion->invitados()->attach(Auth::id(), ['rol' => 'moderador']);
+
+        // Guardar las actividades, si existen
+        if ($request->has('actividades')) {
+            foreach ($request->actividades as $actividad) {
+                $reunion->actividades()->create($actividad);
+            }
+        }
 
         return redirect()->route('reuniones.index')->with('success', 'Reunión creada con éxito.');
     }
@@ -88,6 +100,9 @@ class ReunionController extends Controller
         abort(403, 'No tienes permiso para editar esta reunión.');
     }
 
+    // Cargar actividades relacionadas
+    $reunion->load('actividades');
+
     return view('reuniones.create', compact('reunion'));
 }
 
@@ -101,6 +116,11 @@ public function update(Request $request, Reunion $reunion)
         'titulo' => 'required|string|max:255',
         'descripcion' => 'nullable|string',
         'fecha_hora' => 'required|date',
+        'actividades' => 'nullable|array',
+        'actividades.*.nombre' => 'required_with:actividades|string|max:255',
+        'actividades.*.descripcion' => 'required_with:actividades|string',
+        'actividades.*.responsable' => 'required_with:actividades|string|max:255',
+        'actividades.*.fecha_entrega' => 'required_with:actividades|date',
     ]);
 
     $reunion->update([
@@ -108,6 +128,30 @@ public function update(Request $request, Reunion $reunion)
         'descripcion' => $request->descripcion,
         'fecha_hora' => $request->fecha_hora,
     ]);
+
+    // Procesar actividades nuevas y existentes
+    if ($request->has('actividades')) {
+        foreach ($request->actividades as $actividadData) {
+            if (isset($actividadData['id'])) {
+                $actividad = $reunion->actividades()->find($actividadData['id']);
+                if ($actividad) {
+                    $actividad->update($actividadData);
+                }
+            } else {
+                $reunion->actividades()->create($actividadData);
+            }
+        }
+    }
+
+    // Procesar actividades eliminadas
+    if ($request->has('actividades_eliminar')) {
+        foreach ($request->actividades_eliminar as $id) {
+            $actividad = $reunion->actividades()->find($id);
+            if ($actividad) {
+                $actividad->delete(); // soft delete
+            }
+        }
+    }
 
     return redirect()->route('reuniones.index')->with('success', 'Reunión actualizada con éxito.');
 }
@@ -193,15 +237,35 @@ public function destroy(Reunion $reunion)
         return view('reuniones.history', compact('reunionesOrganizadas', 'reunionesInvitado'));
     }
 
+    //Detalles de una reunion
     public function detalleHistorial(Reunion $reunion)
     {
         // $this->authorize('verReunionHistorial', $reunion); // opcional: política de acceso
 
         $invitados = $reunion->invitados()->get();
 
+        // Cargar actividades que no han sido soft deleted
+        $reunion->load(['actividades' => function ($query) {
+            $query->whereNull('deleted_at');
+        }]);
+
         return view('reuniones.detail_history', compact('reunion', 'invitados'));
     }
 
+    //Actividades de una reunión
+    public function storeActividad(Request $request, Reunion $reunion)
+{
+    $validated = $request->validate([
+        'nombre' => 'required|string|max:255',
+        'descripcion' => 'nullable|string',
+        'responsable' => 'required|string|max:255',
+        'fecha_entrega' => 'required|date|after_or_equal:today',
+    ]);
+
+    $reunion->actividades()->create($validated);
+
+    return redirect()->route('reuniones.show', $reunion)->with('success', 'Actividad registrada correctamente.');
+}
 
 
 }
