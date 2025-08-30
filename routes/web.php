@@ -6,6 +6,7 @@ use App\Http\Controllers\LoginController;
 use App\Http\Controllers\LogoutController;
 use App\Http\Controllers\ReunionController;
 use App\Http\Controllers\RegisterController;
+use App\Http\Controllers\VideoCallController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -38,5 +39,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('reuniones/{reunion}/edit', [ReunionController::class, 'edit'])->name('reuniones.edit');
     Route::put('reuniones/{reunion}', [ReunionController::class, 'update'])->name('reuniones.update');
     Route::delete('reuniones/{reunion}', [ReunionController::class, 'destroy'])->name('reuniones.destroy');
+
+    Route::get('/reuniones/{reunion}/videollamada', [VideoCallController::class, 'join'])->name('reuniones.videollamada');
 
 });

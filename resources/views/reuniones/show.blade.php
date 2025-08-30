@@ -24,7 +24,8 @@
         <div class="text-sm text-gray-500">
             <span class="font-semibold">📅Fecha:</span> {{ \Carbon\Carbon::parse($reunion->fecha_hora)->format('d/m/Y H:i') }}
         </div>
-
+        <!-- Contenedor con flex para los botones -->
+        <div class="flex gap-4 mt-4">
         @if ($reunion->user_id === Auth::id())
             <div>
                 <a href="{{ route('reuniones.invitados', $reunion) }}" class="inline-block mt-4 bg-green-600 text-white px-5 py-2 rounded-lg hover:bg-green-700 transition">
@@ -32,6 +33,12 @@
                 </a>
             </div>
         @endif
+        <!-- Todos (organizador o invitado) -->
+        <a href="{{ route('reuniones.videollamada', $reunion) }} "
+        class="inline-flex items-center mt-4 px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition">
+        Unirme a la videollamada
+        </a>
+        </div>
     </div>
 
     <!-- Lista de Actividades -->

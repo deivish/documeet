@@ -6,8 +6,12 @@
 
 @section('content')
     <div class="max-w-4xl mx-auto py-6">
-
-        <h2 class="text-2xl font-bold mb-4">Reuniones organizadas por ti</h2>
+        <div class="mb-6 flex justify-between items-center">
+        <h1 class="text-2xl font-bold text-gray-800">Reuniones organizadas por ti</h1>
+        <a href="{{ route('post.index') }}" class="inline-flex items-center px-4 py-2 bg-indigo-500 text-white rounded-xl hover:bg-indigo-700 transition">
+            ← Volver a Tucuenta
+        </a>
+    </div>
         @if($reunionesOrganizadas->isEmpty())
             <p class="text-gray-600 mb-6">No has creado ninguna reunión todavía.</p>
         @else

@@ -5,7 +5,7 @@
     <div class="mb-6 flex justify-between items-center">
         <h1 class="text-3xl font-bold text-gray-800">Historial de reuniones</h1>
         <a href="{{ route('post.index') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition">
-            ← Volver a mis reuniones
+            ← Volver a Tucuenta
         </a>
     </div>
 

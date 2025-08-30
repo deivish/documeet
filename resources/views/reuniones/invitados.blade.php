@@ -5,6 +5,15 @@
 @endsection
 
 @section('content')
+<!-- Botón de regreso -->
+    <div class="flex justify-end">
+        <a href="{{ route('reuniones.invitaciones') }}" class="inline-flex items-center text-indigo-600 hover:text-indigo-800 font-medium transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+            Volver a Tus Reuniones
+        </a>
+    </div>
 <div class="max-w-2xl mx-auto bg-white p-6 rounded shadow-md">
     <h2 class="text-xl font-semibold text-indigo-700 mb-4">Agregar Invitado</h2>
 

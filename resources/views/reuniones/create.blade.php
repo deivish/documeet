@@ -6,6 +6,12 @@
 
 @section('content')
 <div class="max-w-3xl mx-auto bg-white p-6 rounded shadow-md">
+    <div class="mb-6 flex justify-between items-center">
+        <h1 class="text-3xl font-bold text-gray-800"></h1>
+        <a href="{{ route('post.index') }}" class="inline-flex items-center px-4 py-2 bg-indigo-500 text-white rounded-xl hover:bg-indigo-700 transition">
+            ← Volver a Tucuenta
+        </a>
+    </div>
     <form action="{{ isset($reunion) ? route('reuniones.update', $reunion->id) : route('reuniones.store') }}" method="POST">
         @csrf
         @if(isset($reunion))
