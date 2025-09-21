@@ -42,5 +42,26 @@ class Reunion extends Model
         return $this->hasMany(Actividad::class);
     }
 
+    public function transcripciones()
+    {
+        return $this->hasMany(\App\Models\Transcripcion::class);
+    }
+
+    public function actas()
+    {
+        return $this->hasMany(\App\Models\Acta::class);
+    }
+
+    public function acta()
+    {
+        return $this->hasOne(Acta::class);
+    }
+
+    public function compromisos() 
+    {
+    return $this->hasMany(Compromiso::class);
+    }
+
+
 
 }

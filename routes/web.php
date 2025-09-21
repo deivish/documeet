@@ -1,11 +1,15 @@
 <?php
 
+use App\Http\Controllers\ActaController;
+use App\Http\Controllers\AsistenciaController;
+use App\Http\Controllers\CompromisoController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\LogoutController;
 use App\Http\Controllers\ReunionController;
 use App\Http\Controllers\RegisterController;
+use App\Http\Controllers\TranscripcionController;
 use App\Http\Controllers\VideoCallController;
 
 Route::get('/', function () {
@@ -42,4 +46,30 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/reuniones/{reunion}/videollamada', [VideoCallController::class, 'join'])->name('reuniones.videollamada');
 
+    // Transcripciones
+    Route::post('reuniones/{reunion}/transcripciones', [TranscripcionController::class,'store'])->name('reuniones.transcripciones.store');
+    Route::get('reuniones/{reunion}/transcripciones/last', [TranscripcionController::class,'showLast'])->name('reuniones.transcripciones.last');
+
+    // Actas
+    Route::get('reuniones/{reunion}/acta/create', [ActaController::class,'create'])->name('actas.create');
+    Route::post('reuniones/{reunion}/acta', [ActaController::class,'store'])->name('actas.store');
+    Route::post('actas/{acta}/finalizar', [ActaController::class,'finalizar'])->name('actas.finalizar');
+    Route::get('actas/{acta}/pdf', [ActaController::class,'exportPdf'])->name('actas.exportPdf');
+    Route::get('actas/{acta}', [ActaController::class,'show'])->name('actas.show');
+    Route::get('actas/{acta}/pdf', [ActaController::class, 'descargarPdf'])
+    ->name('actas.pdf');
+
+
+    // Asistencia
+    Route::post('reuniones/{reunion}/asistencia/entrada', [AsistenciaController::class,'entrada'])->name('reuniones.asistencia.entrada');
+    Route::post('reuniones/{reunion}/asistencia/salida', [AsistenciaController::class,'salida'])->name('reuniones.asistencia.salida');
+
+
+    // Guardar un compromiso en una reunión
+    Route::post('/reuniones/{reunion}/compromisos', [CompromisoController::class, 'store'])
+        ->name('compromisos.store');
+
+    // Eliminar un compromiso
+    Route::delete('/compromisos/{compromiso}', [CompromisoController::class, 'destroy'])
+        ->name('compromisos.destroy');
 });

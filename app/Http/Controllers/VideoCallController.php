@@ -9,18 +9,22 @@ use Illuminate\Support\Facades\Auth;
 class VideoCallController extends Controller
 {
     public function join(Reunion $reunion)
-    {
-        // Opcional: política/permiso para ver la reunión
-        // $this->authorize('view', $reunion);
+{
+    $roomName = 'sala-'.$reunion->id.'-'.Str::random(8);
 
-        // Nombre de sala determinístico y poco “adivinable”
-        // (puedes ajustarlo con un hash más fuerte si quieres)
-        $roomName = 'documeet-' . $reunion->id . '-' . Str::slug($reunion->titulo) . '-' . substr(sha1($reunion->id . config('app.key')),0,8);
+    // Fallback: si tu tabla "users" no tiene "name", usa "fullName" o "email"
+    $userName = Auth::user()->name ?? Auth::user()->fullName ?? Auth::user()->email;
 
-        return view('reuniones.videollamada', [
-            'reunion'  => $reunion,
-            'roomName' => $roomName,
-            'userName' => Auth::user()->name ?? 'Invitado',
+    // Crear acta en borrador automáticamente si no existe
+    if (!$reunion->acta) {
+        $reunion->acta()->create([
+            'contenido' => '',
+            'estado' => 'borrador',
+            'creada_por' => Auth::id(),
         ]);
     }
+
+    return view('reuniones.videollamada', compact('reunion', 'roomName', 'userName'));
+}
+
 }
