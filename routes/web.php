@@ -72,4 +72,14 @@ Route::middleware(['auth'])->group(function () {
     // Eliminar un compromiso
     Route::delete('/compromisos/{compromiso}', [CompromisoController::class, 'destroy'])
         ->name('compromisos.destroy');
+
+    // Editar un compromiso
+    Route::put('/compromisos/{compromiso}', [CompromisoController::class, 'update'])
+        ->name('compromisos.update');
+
+
+    // Actividades desde el Acta
+    Route::post('/actas/{acta}/actividades', [ActaController::class, 'storeActividad'])->name('actas.actividades.store');
+    Route::delete('/actas/actividades/{actividad}', [ActaController::class, 'destroyActividad'])->name('actas.actividades.destroy');
+    Route::put('/actas/actividades/{actividad}', [ActaController::class, 'updateActividad'])->name('actas.actividades.update');
 });

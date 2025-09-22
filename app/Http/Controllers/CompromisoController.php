@@ -36,4 +36,28 @@ class CompromisoController extends Controller
             'message' => 'Compromiso eliminado'
         ]);
     }
+
+    public function update(Request $request, \App\Models\Compromiso $compromiso)
+{
+    $data = $request->validate([
+        'descripcion' => 'required|string',
+        'responsable' => 'required|string',
+        'fecha' => 'required|date',
+        'resultado' => 'nullable|string',
+    ]);
+
+    $compromiso->update($data);
+
+    return response()->json([
+        'ok' => true,
+        'compromiso' => [
+            'id' => $compromiso->id,
+            'descripcion' => $compromiso->descripcion,
+            'responsable' => $compromiso->responsable,
+            'fecha' => \Carbon\Carbon::parse($compromiso->fecha)->format('d/m/Y'),
+            'resultado' => $compromiso->resultado,
+        ]
+    ]);
+}
+
 }

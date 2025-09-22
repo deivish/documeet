@@ -11,6 +11,7 @@ use PhpOffice\PhpWord\PhpWord;
 use PhpOffice\PhpWord\IOFactory;
 use App\Notifications\ActaGenerada;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\Actividad;
 
 class ActaController extends Controller
 {
@@ -130,6 +131,68 @@ class ActaController extends Controller
 
     // Opción B (si prefieres ver en navegador):
     // return $pdf->stream('acta-'.$acta->id.'.pdf');
+}
+
+// Guardar una actividad desde el acta
+public function storeActividad(Request $request, Acta $acta)
+{
+    $data = $request->validate([
+        'nombre' => 'required|string',
+        'responsable' => 'required|string',
+        'fecha_entrega' => 'required|date',
+        'descripcion' => 'nullable|string',
+    ]);
+
+    $actividad = $acta->reunion->actividades()->create($data);
+
+    return response()->json([
+        'ok' => true,
+        'actividad' => [
+            'id' => $actividad->id,
+            'nombre' => $actividad->nombre,
+            'responsable' => $actividad->responsable,
+            'fecha_entrega' => \Carbon\Carbon::parse($actividad->fecha_entrega)->format('d/m/Y'),
+            'descripcion' => $actividad->descripcion,
+        ]
+    ]);
+}
+
+// Eliminar actividad
+public function destroyActividad($id)
+{
+    $actividad = Actividad::find($id);
+
+    if (!$actividad) {
+        return response()->json(['ok' => false, 'message' => 'Actividad no encontrada'], 404);
+    }
+
+    $actividad->delete();
+    return response()->json(['ok' => true]);
+}
+
+public function updateActividad(Request $request, $id)
+{
+    $actividad = \App\Models\Actividad::findOrFail($id);
+
+    $data = $request->validate([
+        'nombre' => 'required|string',
+        'responsable' => 'required|string',
+        'fecha_entrega' => 'required|date',
+        'descripcion' => 'nullable|string',
+    ]);
+
+    $actividad->update($data);
+
+    return response()->json([
+        'ok' => true,
+        'actividad' => [
+            'id' => $actividad->id,
+            'nombre' => $actividad->nombre,
+            'responsable' => $actividad->responsable,
+            'fecha_entrega' => \Carbon\Carbon::parse($actividad->fecha_entrega)->format('d/m/Y'),
+            'descripcion' => $actividad->descripcion,
+        ]
+    ]);
 }
 
 }

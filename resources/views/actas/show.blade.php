@@ -31,48 +31,53 @@
 
         <hr class="my-4">
 
-<!-- Tabla de actividades -->
-<h3 class="text-lg font-semibold text-gray-800 mb-2">📝 Actividades</h3>
+        <!-- Tabla de actividades -->
+        <h3 class="text-lg font-semibold text-gray-800 mb-2">📝 Actividades</h3>
 
-<table class="w-full border border-gray-300 rounded-lg mb-4">
-    <thead>
-        <tr class="bg-gray-100">
-            <th class="p-2 border">Nombre</th>
-            <th class="p-2 border">Responsable</th>
-            <th class="p-2 border">Fecha entrega</th>
-            <th class="p-2 border">Descripción</th>
-            <th class="p-2 border text-center">Acciones</th>
-        </tr>
-    </thead>
-    <tbody id="actividades-table">
-        @foreach($reunion->actividades as $actividad)
-            <tr id="actividad-{{ $actividad->id }}">
-                <td class="p-2 border">{{ $actividad->nombre }}</td>
-                <td class="p-2 border">{{ $actividad->responsable }}</td>
-                <td class="p-2 border">{{ \Carbon\Carbon::parse($actividad->fecha_entrega)->format('d/m/Y') }}</td>
-                <td class="p-2 border">{{ $actividad->descripcion }}</td>
-                <td class="p-2 border text-center">
-                    <button onclick="eliminarActividad({{ $actividad->id }})"
-                            class="bg-red-500 text-white px-2 py-1 rounded cursor-pointer">❌</button>
-                </td>
-            </tr>
-        @endforeach
-    </tbody>
-</table>
+        <table class="w-full border border-gray-300 rounded-lg mb-4">
+            <thead>
+                <tr class="bg-gray-100">
+                    <th class="p-2 border">Nombre</th>
+                    <th class="p-2 border">Responsable</th>
+                    <th class="p-2 border">Fecha entrega</th>
+                    <th class="p-2 border">Descripción</th>
+                    <th class="p-2 border text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="actividades-table">
+                @foreach($reunion->actividades as $actividad)
+                    <tr id="actividad-{{ $actividad->id }}">
+                        <td class="p-2 border" contenteditable="true" data-field="nombre">{{ $actividad->nombre }}</td>
+                        <td class="p-2 border" contenteditable="true" data-field="responsable">{{ $actividad->responsable }}</td>
+                        <td class="p-2 border" contenteditable="true" data-field="fecha_entrega">{{ \Carbon\Carbon::parse($actividad->fecha_entrega)->format('Y-m-d') }}</td>
+                        <td class="p-2 border" contenteditable="true" data-field="descripcion">{{ $actividad->descripcion }}</td>
+                        <td class="p-2 border text-center">
+                            <button onclick="eliminarActividad({{ $actividad->id }})"
+                                    class="bg-red-500 text-white px-2 py-1 rounded cursor-pointer">❌</button>
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
 
-<!-- Formulario AJAX para actividades -->
-<div class="grid grid-cols-1 md:grid-cols-4 gap-2 mb-3">
-    <input type="text" id="nombre" placeholder="Nombre" class="border p-2 rounded">
-    <input type="text" id="responsableAct" placeholder="Responsable" class="border p-2 rounded">
-    <input type="date" id="fecha_entrega" class="border p-2 rounded">
-    <input type="text" id="descripcionAct" placeholder="Descripción" class="border p-2 rounded">
-</div>
+        <!-- Botón actualizar actividades -->
+        <button onclick="actualizarActividades()" 
+                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition mb-4 cursor-pointer">
+            🔄 Actualizar Actividades
+        </button>
 
-<button id="btn-guardar-actividad"
-        class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
-    ➕ Guardar Actividad
-</button>
+        <!-- Formulario AJAX para actividades nuevas -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-2 mb-3">
+            <input type="text" id="nombre" placeholder="Nombre" class="border p-2 rounded">
+            <input type="text" id="responsableAct" placeholder="Responsable" class="border p-2 rounded">
+            <input type="date" id="fecha_entrega" class="border p-2 rounded">
+            <input type="text" id="descripcionAct" placeholder="Descripción" class="border p-2 rounded">
+        </div>
 
+        <button id="btn-guardar-actividad"
+                class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition cursor-pointer">
+            ➕ Guardar Actividad
+        </button>
 
         <hr class="my-4">
 
@@ -92,22 +97,26 @@
             <tbody id="compromisos-table">
                 @foreach($reunion->compromisos as $compromiso)
                     <tr id="compromiso-{{ $compromiso->id }}">
-                        <td class="p-2 border">{{ $compromiso->descripcion }}</td>
-                        <td class="p-2 border">{{ $compromiso->responsable }}</td>
-                        <td class="p-2 border">{{ \Carbon\Carbon::parse($compromiso->fecha)->format('d/m/Y') }}</td>
-                        <td class="p-2 border">{{ $compromiso->resultado }}</td>
+                        <td class="p-2 border" contenteditable="true" data-field="descripcion">{{ $compromiso->descripcion }}</td>
+                        <td class="p-2 border" contenteditable="true" data-field="responsable">{{ $compromiso->responsable }}</td>
+                        <td class="p-2 border" contenteditable="true" data-field="fecha">{{ \Carbon\Carbon::parse($compromiso->fecha)->format('Y-m-d') }}</td>
+                        <td class="p-2 border" contenteditable="true" data-field="resultado">{{ $compromiso->resultado }}</td>
                         <td class="p-2 border text-center">
                             <button onclick="eliminarCompromiso({{ $compromiso->id }})"
-                                    class="bg-red-500 text-white px-2 py-1 rounded cursor-pointer">
-                                ❌
-                            </button>
+                                    class="bg-red-500 text-white px-2 py-1 rounded cursor-pointer">❌</button>
                         </td>
                     </tr>
                 @endforeach
             </tbody>
         </table>
 
-        <!-- Formulario AJAX -->
+        <!-- Botón actualizar compromisos -->
+        <button onclick="actualizarCompromisos()" 
+                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition mb-4 cursor-pointer">
+            🔄 Actualizar Compromisos
+        </button>
+
+        <!-- Formulario AJAX para compromisos nuevos -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-2 mb-3">
             <input type="text" id="descripcion" placeholder="Compromiso" class="border p-2 rounded">
             <input type="text" id="responsable" placeholder="Responsable" class="border p-2 rounded">
@@ -116,7 +125,7 @@
         </div>
 
         <button id="btn-guardar"
-                class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+                class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition cursor-pointer">
             ➕ Guardar Compromiso
         </button>
 
@@ -141,74 +150,91 @@
             @endif
         </div>
     </div>
+
+    <!-- Notificación flotante -->
+    <div id="toast" 
+        class="hidden fixed bottom-4 right-4 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg transition-opacity duration-500">
+    </div>
 </div>
 
 <!-- Script AJAX -->
 <script>
 const reunionId = {{ $reunion->id }};
 
-// Guardar compromiso
-document.getElementById('btn-guardar').addEventListener('click', () => {
-    const descripcion = document.getElementById('descripcion').value;
-    const responsable = document.getElementById('responsable').value;
-    const fecha = document.getElementById('fecha').value;
-    const resultado = document.getElementById('resultado').value;
+// ======================= ACTIVIDADES =========================
 
-    if (!descripcion || !responsable || !fecha) {
-        alert("Por favor complete los campos obligatorios");
-        return;
-    }
+// Actualizar actividades
+function actualizarActividades() {
+    document.querySelectorAll('#actividades-table tr').forEach(row => {
+        const id = row.id.replace('actividad-', '');
+        const data = {};
+        row.querySelectorAll('[contenteditable]').forEach(cell => {
+            data[cell.dataset.field] = cell.innerText.trim();
+        });
 
-    fetch(`/reuniones/${reunionId}/compromisos`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-        },
-        body: JSON.stringify({ descripcion, responsable, fecha, resultado })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.ok) {
-            const comp = data.compromiso;
-            const row = `
-                <tr id="compromiso-${comp.id}">
-                    <td class="p-2 border">${comp.descripcion}</td>
-                    <td class="p-2 border">${comp.responsable}</td>
-                    <td class="p-2 border">${comp.fecha}</td>
-                    <td class="p-2 border">${comp.resultado ?? ''}</td>
-                    <td class="p-2 border text-center">
-                        <button onclick="eliminarCompromiso(${comp.id})"
-                                class="bg-red-500 text-white px-2 py-1 rounded">❌</button>
-                    </td>
-                </tr>`;
-            document.getElementById('compromisos-table').insertAdjacentHTML('beforeend', row);
-
-            // limpiar inputs
-            document.getElementById('descripcion').value = '';
-            document.getElementById('responsable').value = '';
-            document.getElementById('fecha').value = '';
-            document.getElementById('resultado').value = '';
-        }
-    });
-});
-
-// Eliminar compromiso
-function eliminarCompromiso(id) {
-    if (!confirm("¿Seguro que deseas eliminar este compromiso?")) return;
-
-    fetch(`/compromisos/${id}`, {
-        method: 'DELETE',
-        headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-        }
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.ok) {
-            document.getElementById(`compromiso-${id}`).remove();
-        }
+        fetch(`/actas/actividades/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify(data)
+        })
+        .then(res => res.json())
+        .then(resp => {
+            if (resp.ok) {
+                showToast(`✅ Actividad ${id} actualizada`);
+            } else {
+                showToast(`⚠️ Error al actualizar actividad ${id}`, 'bg-red-600');
+            }
+        });
     });
 }
+
+// ======================= COMPROMISOS =========================
+
+// Actualizar compromisos
+function actualizarCompromisos() {
+    document.querySelectorAll('#compromisos-table tr').forEach(row => {
+        const id = row.id.replace('compromiso-', '');
+        const data = {};
+        row.querySelectorAll('[contenteditable]').forEach(cell => {
+            data[cell.dataset.field] = cell.innerText.trim();
+        });
+
+        fetch(`/compromisos/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify(data)
+        })
+        .then(res => res.json())
+        .then(resp => {
+            if (resp.ok) {
+                showToast(`✅ Compromiso ${id} actualizado`);
+            } else {
+                showToast(`⚠️ Error al actualizar compromiso ${id}`, 'bg-red-600');
+            }
+        });
+    });
+}
+
+// Mostrar notificación tipo "toast"
+function showToast(message, color = 'bg-green-600') {
+    const toast = document.getElementById('toast');
+    toast.innerText = message;
+    toast.className = `fixed bottom-4 right-4 text-white px-4 py-2 rounded-lg shadow-lg transition-opacity duration-500 ${color}`;
+    toast.classList.remove('hidden');
+    toast.style.opacity = '1';
+
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.classList.add('hidden'), 500);
+    }, 2000); // Se oculta en 2 segundos
+}
+
+
 </script>
 @endsection
