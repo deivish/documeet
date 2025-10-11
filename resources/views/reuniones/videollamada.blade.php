@@ -40,8 +40,19 @@
                     placeholder="Aquí aparecerá la transcripción o puedes tomar notas manualmente..."></textarea>
 
             @if ($reunion->user_id === Auth::id())
-    <div class="flex flex-col gap-2 mt-3">
+        <div class="flex flex-col gap-2 mt-3">
+        
+        <button type="button"class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"onclick="startRecording()">
+    🎙️ Iniciar Grabación
+        </button>
 
+        <button type="button"
+            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+            onclick="stopRecording()">
+            ⏹️ Detener y Enviar
+        </button>
+
+        
         {{-- Botón Guardar notas (borrador vía fetch) --}}
         <button id="btn-guardar"
             class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
@@ -65,8 +76,8 @@
         @endif
 
     </div>
-@endif
 
+@endif
 
             <p class="text-xs text-gray-400">
                 * Las notas se guardan automáticamente cada 12 segundos.
@@ -156,6 +167,41 @@
 
 })();
 </script>
+<script>
+let recorder, audioChunks = [];
+
+async function startRecording() {
+    // Pide permiso para capturar el audio del micrófono / pestaña
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+
+    recorder = new MediaRecorder(stream);
+    recorder.ondataavailable = e => audioChunks.push(e.data);
+    recorder.onstop = async () => {
+        const blob = new Blob(audioChunks, { type: 'audio/webm' });
+        const formData = new FormData();
+        formData.append('audio', blob);
+
+        await fetch("{{ route('audio.store', $reunion->id) }}", {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: formData
+        });
+
+        audioChunks = [];
+    };
+
+    recorder.start();
+    alert('Grabación iniciada');
+}
+
+function stopRecording() {
+    recorder.stop();
+    alert('Grabación detenida. Enviando al servidor...');
+}
+</script>
+
 
 
 @endsection

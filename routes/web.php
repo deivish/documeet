@@ -11,6 +11,7 @@ use App\Http\Controllers\ReunionController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\TranscripcionController;
 use App\Http\Controllers\VideoCallController;
+use App\Http\Controllers\AudioController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -47,8 +48,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/reuniones/{reunion}/videollamada', [VideoCallController::class, 'join'])->name('reuniones.videollamada');
 
     // Transcripciones
+    Route::post('/reuniones/{id}/audio', [AudioController::class, 'store'])->name('audio.store');
     Route::post('reuniones/{reunion}/transcripciones', [TranscripcionController::class,'store'])->name('reuniones.transcripciones.store');
-    Route::get('reuniones/{reunion}/transcripciones/last', [TranscripcionController::class,'showLast'])->name('reuniones.transcripciones.last');
+    Route::resource('transcripciones', TranscripcionController::class);
+    // routes/web.php
+    
 
     // Actas
     Route::get('reuniones/{reunion}/acta/create', [ActaController::class,'create'])->name('actas.create');

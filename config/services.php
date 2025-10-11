@@ -34,5 +34,14 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
+    'openai' => [
+    'key' => env('OPENAI_API_KEY'),
+    ],
+    'speechmatics' => [
+    'key' => env('SPEECHMATICS_API_KEY'),
+    'lang' => env('SPEECHMATICS_LANG', 'es'),
+    ],
+
+
 
 ];
