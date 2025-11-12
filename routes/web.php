@@ -82,4 +82,18 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/actas/{acta}/actividades', [ActaController::class, 'storeActividad'])->name('actas.actividades.store');
     Route::delete('/actas/actividades/{actividad}', [ActaController::class, 'destroyActividad'])->name('actas.actividades.destroy');
     Route::put('/actas/actividades/{actividad}', [ActaController::class, 'updateActividad'])->name('actas.actividades.update');
+
+
+    // Transcripciones
+    Route::post('reuniones/{reunion}/transcripciones', [TranscripcionController::class,'store'])
+        ->name('reuniones.transcripciones.store');
+    Route::get('reuniones/{reunion}/transcripciones/last', [TranscripcionController::class,'showLast'])
+        ->name('reuniones.transcripciones.last');
+    Route::get('reuniones/{reunion}/transcripciones/all', [TranscripcionController::class,'getAll'])
+        ->name('reuniones.transcripciones.all');
+    Route::get('reuniones/{reunion}/transcripciones', [TranscripcionController::class,'index'])
+        ->name('reuniones.transcripciones.index');
+
+    Route::post('reuniones/{reunion}/transcripciones/procesar-audio', [TranscripcionController::class, 'procesarAudio'])
+    ->name('reuniones.transcripciones.procesar-audio');
 });
