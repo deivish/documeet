@@ -1,644 +1,774 @@
 @extends('layouts.app')
 
 @section('titulo')
-    Videollamada — {{ $reunion->titulo }}
+    Videollamada
 @endsection
 
 @section('content')
-    <div class="min-h-screen bg-gray-50">
-        {{-- Barra superior --}}
-        <div class="bg-white shadow-sm sticky top-0 z-10">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex items-center justify-between h-16">
-                    <div class="flex-1">
-                        <h2 class="text-lg sm:text-xl font-bold text-gray-900 truncate">
+<div class="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-indigo-900">
+    
+    {{-- Barra Superior Mejorada --}}
+    <div class="bg-gradient-to-r from-gray-800 to-gray-900 shadow-2xl sticky top-0 z-50 border-b border-gray-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                {{-- Logo y Título --}}
+                <div class="flex items-center gap-4 flex-1 min-w-0">
+                    <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z">
+                            </path>
+                        </svg>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <h2 class="text-base sm:text-lg font-bold text-white truncate">
                             {{ $reunion->titulo }}
                         </h2>
+                        <p class="text-xs text-gray-400 truncate hidden sm:block">
+                            {{ \Carbon\Carbon::parse($reunion->fecha_hora)->format('d/m/Y H:i') }}
+                        </p>
                     </div>
+                </div>
 
-                    {{-- Botón copiar link --}}
-                    <div class="flex items-center gap-3">
-                        <button id="copy-link-btn"
-                            class="inline-flex items-center px-3 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
-                            📋 Copiar Link
-                        </button>
+                {{-- Botones de Acción --}}
+                <div class="flex items-center gap-2 ml-4">
+                    <button id="copy-link-btn"
+                            class="inline-flex items-center px-3 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all shadow-md hover:shadow-lg">
+                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z">
+                            </path>
+                        </svg>
+                        <span class="hidden sm:inline">Copiar Link</span>
+                    </button>
 
-                        <a href="{{ route('reuniones.show', $reunion->id) }}"
-                            class="inline-flex items-center px-3 py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
-                            ← Volver
-                        </a>
-                    </div>
+                    <a href="{{ route('reuniones.show', $reunion->id) }}"
+                       class="inline-flex items-center px-3 py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg">
+                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                        <span class="hidden sm:inline">Volver</span>
+                    </a>
                 </div>
             </div>
         </div>
+    </div>
 
-        {{-- Contenedor principal --}}
-        <div class="max-w-7xl mx-auto px-4 py-6">
-            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+    {{-- Contenedor Principal --}}
+    <div class="max-w-7xl mx-auto px-4 py-6">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
 
-                {{-- Video Daily.co --}}
-                <div class="lg:col-span-3">
-                    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
-                        <div id="call-container" style="min-height: 500px; height: 70vh;"></div>
+            {{-- Panel de Video (3/4) --}}
+            <div class="lg:col-span-3 space-y-4">
+                {{-- Contenedor de Video --}}
+                <div class="bg-gray-800 rounded-2xl shadow-2xl overflow-hidden border-2 border-gray-700">
+                    <div id="call-container" class="relative" style="min-height: 500px; height: 70vh;">
+                        {{-- ✅ Loader mejorado (se oculta automáticamente) --}}
+                        <div id="video-loader" class="absolute inset-0 flex items-center justify-center bg-gray-900 z-10">
+                            <div class="text-center">
+                                <div class="w-16 h-16 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                                <p class="text-white font-medium">Conectando a la videollamada...</p>
+                                <p class="text-gray-400 text-sm mt-2">Espera un momento</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                {{-- Panel de transcripción --}}
-                <div class="lg:col-span-1">
-                    <div class="bg-white rounded-xl shadow-lg p-4 sticky top-20"
-                        style="max-height: calc(100vh - 120px); overflow-y: auto;">
+                {{-- Info Card (Desktop) --}}
+                <div class="hidden lg:block bg-gradient-to-r from-indigo-900/50 to-purple-900/50 backdrop-blur rounded-xl p-4 border border-indigo-700/50">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-indigo-500/20 rounded-lg flex items-center justify-center">
+                                <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+                                    </path>
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-white font-semibold text-sm">Transcripción Activa</p>
+                                <p class="text-gray-400 text-xs">Capturando audio en tiempo real</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                            <span class="text-green-400 text-sm font-medium" id="status-indicator">Iniciando...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-                        <h3 class="text-lg font-semibold text-gray-900 mb-3">
-                            🎙️ Transcripción en Vivo
+            {{-- Panel de Transcripción (1/4) --}}
+            <div class="lg:col-span-1">
+                <div class="bg-gray-800 rounded-2xl shadow-2xl border-2 border-gray-700 overflow-hidden sticky top-24"
+                     style="max-height: calc(100vh - 120px);">
+                    
+                    {{-- Header --}}
+                    <div class="bg-gradient-to-r from-purple-600 to-indigo-600 p-4 border-b border-gray-700">
+                        <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                    d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z">
+                                </path>
+                            </svg>
+                            Transcripción en Vivo
                         </h3>
+                        <p class="text-xs text-purple-200 mt-1">Captura automática de audio</p>
+                    </div>
 
+                    <div class="p-4 space-y-4 overflow-y-auto" style="max-height: calc(100vh - 250px);">
+                        
                         {{-- Controles --}}
-                        <div class="flex gap-2 mb-3">
+                        <div class="flex gap-2">
                             <button id="manual-start-btn"
-                                class="flex-1 px-3 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition">
-                                ▶️ Iniciar
+                                    class="flex-1 flex items-center justify-center gap-2 px-3 py-3 bg-green-600 text-white text-sm font-semibold rounded-xl hover:bg-green-700 transition-all shadow-lg hover:shadow-xl">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                Iniciar
                             </button>
                             <button id="manual-stop-btn"
-                                class="flex-1 px-3 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition"
-                                disabled>
-                                ⏹️ Detener
+                                    class="flex-1 flex items-center justify-center gap-2 px-3 py-3 bg-red-600 text-white text-sm font-semibold rounded-xl hover:bg-red-700 transition-all shadow-lg hover:shadow-xl"
+                                    disabled>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"></path>
+                                </svg>
+                                Detener
                             </button>
                         </div>
 
                         {{-- Estado --}}
                         <div id="transcription-status"
-                            class="text-xs text-center px-3 py-2 rounded-lg bg-gray-100 text-gray-600 mb-3">
-                            ⏸️ Detenida
+                             class="text-xs text-center px-4 py-3 rounded-xl bg-gray-700 text-gray-300 border border-gray-600">
+                            <div class="flex items-center justify-center gap-2">
+                                <span class="w-2 h-2 bg-gray-500 rounded-full"></span>
+                                Detenida
+                            </div>
                         </div>
 
-                        {{-- Aviso mejorado --}}
-                        <div
-                            class="mb-4 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 rounded-lg">
-                            <p class="text-sm text-blue-900 font-bold mb-2 flex items-center">
-                                <span class="text-xl mr-2">🎙️</span>
-                                Transcripción Continua
+                        {{-- Instrucciones --}}
+                        <div class="bg-gradient-to-br from-blue-900/50 to-indigo-900/50 backdrop-blur rounded-xl p-4 border border-blue-700/50">
+                            <p class="text-sm text-blue-300 font-bold mb-3 flex items-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+                                    </path>
+                                </svg>
+                                Cómo Usar
                             </p>
-                            <div class="text-xs text-blue-800 space-y-1">
-                                <p class="flex items-start">
-                                    <span class="mr-2">1️⃣</span>
-                                    <span>Haz clic en <strong>"▶️ Iniciar"</strong></span>
-                                </p>
-                                <p class="flex items-start">
-                                    <span class="mr-2">2️⃣</span>
-                                    <span>Selecciona la <strong>pestaña de la videollamada</strong></span>
-                                </p>
-                                <p class="flex items-start">
-                                    <span class="mr-2">3️⃣</span>
-                                    <span><strong class="text-red-600">✅ MARCA "Compartir audio"</strong></span>
-                                </p>
-                                <p class="flex items-start">
-                                    <span class="mr-2">4️⃣</span>
-                                    <span>¡Habla! Se transcribe cada <strong>15 segundos</strong></span>
-                                </p>
+                            <div class="space-y-2 text-xs text-blue-200">
+                                <div class="flex items-start gap-2">
+                                    <span class="flex-shrink-0 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-xs">1</span>
+                                    <p>Haz clic en <strong>"Iniciar"</strong></p>
+                                </div>
+                                <div class="flex items-start gap-2">
+                                    <span class="flex-shrink-0 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-xs">2</span>
+                                    <p>Selecciona la pestaña de videollamada</p>
+                                </div>
+                                <div class="flex items-start gap-2">
+                                    <span class="flex-shrink-0 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-xs">3</span>
+                                    <p><strong class="text-yellow-300">¡Marca "Compartir audio"!</strong></p>
+                                </div>
+                                <div class="flex items-start gap-2">
+                                    <span class="flex-shrink-0 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-xs">4</span>
+                                    <p>Transcripción cada 15 segundos</p>
+                                </div>
                             </div>
-                            <div class="mt-2 p-2 bg-green-100 rounded border border-green-300">
-                                <p class="text-xs text-green-800">
-                                    ✅ Captura el audio de <strong>TODOS</strong> los participantes en <strong>UN solo
-                                        registro continuo</strong>
+                            <div class="mt-3 p-2 bg-green-900/50 rounded-lg border border-green-700/50">
+                                <p class="text-xs text-green-300 flex items-center gap-1">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                    Captura TODOS los participantes
                                 </p>
                             </div>
                         </div>
 
-                        {{-- Texto temporal --}}
-                        <div class="mb-3">
+                        {{-- Texto Temporal --}}
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wide">Texto en Proceso</label>
                             <div id="interim-text"
-                                class="min-h-[50px] p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm">
-                                <span class="text-gray-400">Esperando...</span>
+                                 class="min-h-[60px] p-3 bg-gray-900 border-2 border-gray-700 rounded-xl text-sm text-gray-300">
+                                <span class="text-gray-500">Esperando...</span>
                             </div>
                         </div>
 
-                        {{-- Transcripción completa --}}
-                        <div class="mb-3">
+                        {{-- Transcripción Completa --}}
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wide">Transcripción Completa</label>
                             <textarea id="notes"
-                                class="w-full border border-gray-300 rounded-lg p-3 text-sm resize-none focus:ring-2 focus:ring-blue-500"
-                                style="min-height: 250px;" placeholder="La transcripción completa aparecerá aquí automáticamente..." readonly></textarea>
+                                      class="w-full bg-gray-900 border-2 border-gray-700 rounded-xl p-3 text-sm text-white resize-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                      style="min-height: 250px;" 
+                                      placeholder="La transcripción completa aparecerá aquí automáticamente..." 
+                                      readonly></textarea>
                         </div>
 
                         {{-- Estadísticas --}}
-                        <div class="flex justify-between text-xs text-gray-500 mb-4">
-                            <span id="word-count">0 palabras</span>
+                        <div class="flex justify-between text-xs text-gray-400 px-1">
+                            <span id="word-count" class="flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path>
+                                </svg>
+                                0 palabras
+                            </span>
                             <span id="char-count">0 caracteres</span>
                         </div>
 
-                        {{-- Botones (solo moderador) --}}
+                        {{-- Botones (Solo Moderador) --}}
                         @if ($reunion->user_id === Auth::id())
-                            <div class="space-y-2 pt-4 border-t border-gray-200">
-                                <button id="btn-guardar"
-                                    class="w-full px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition">
-                                    💾 Guardar notas
-                                </button>
+                        <div class="space-y-2 pt-4 border-t border-gray-700">
+                            <button id="btn-guardar"
+                                    class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white text-sm font-semibold rounded-xl hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path>
+                                </svg>
+                                Guardar Notas
+                            </button>
 
-                                @if ($reunion->acta && $reunion->acta->estado !== 'final')
-                                    <form action="{{ route('actas.finalizar', $reunion->acta->id) }}" method="POST">
-                                        @csrf
-                                        <button type="submit"
-                                            class="w-full px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition">
-                                            📋 Finalizar Acta
-                                        </button>
-                                    </form>
-                                @elseif($reunion->acta && $reunion->acta->estado === 'final')
-                                    <a href="{{ route('actas.show', $reunion->acta->id) }}"
-                                        class="block w-full px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition text-center">
-                                        📄 Ver Acta
-                                    </a>
-                                @endif
-                            </div>
+                            @if ($reunion->acta && $reunion->acta->estado !== 'final')
+                            <form action="{{ route('actas.finalizar', $reunion->acta->id) }}" method="POST">
+                                @csrf
+                                <button type="submit"
+                                        class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-purple-600 text-white text-sm font-semibold rounded-xl hover:bg-purple-700 transition-all shadow-lg hover:shadow-xl">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    Finalizar Acta
+                                </button>
+                            </form>
+                            @elseif($reunion->acta && $reunion->acta->estado === 'final')
+                            <a href="{{ route('actas.show', $reunion->acta->id) }}"
+                               class="block w-full flex items-center justify-center gap-2 px-4 py-3 bg-purple-600 text-white text-sm font-semibold rounded-xl hover:bg-purple-700 transition-all shadow-lg hover:shadow-xl text-center">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                Ver Acta
+                            </a>
+                            @endif
+                        </div>
                         @endif
                     </div>
                 </div>
             </div>
+
         </div>
     </div>
+</div>
 
-    {{-- Daily.co SDK --}}
-    <script src="https://unpkg.com/@daily-co/daily-js"></script>
+{{-- Daily.co SDK --}}
+<script src="https://unpkg.com/@daily-co/daily-js"></script>
 
-    <script>
-        console.log('🟢 Sistema iniciado: Daily.co + Deepgram (Transcripción Continua)');
+<script>
+    console.log('🟢 Sistema iniciado: Daily.co + Deepgram');
 
-        (function() {
-            // ========================================
-            // PARTE 1: VIDEOLLAMADA CON DAILY.CO
-            // ========================================
+    (function() {
+        // ✅ OCULTAR LOADER cuando Daily.co cargue
+        const loader = document.getElementById('video-loader');
+        const statusIndicator = document.getElementById('status-indicator');
 
-            const callFrame = window.DailyIframe.createFrame(
-                document.getElementById('call-container'), {
-                    url: "{{ $dailyUrl }}",
-                    showLeaveButton: true,
-                    showFullscreenButton: true,
-                    iframeStyle: {
-                        width: '100%',
-                        height: '100%',
-                        border: '0',
-                        borderRadius: '8px'
-                    }
+        // ========================================
+        // PARTE 1: VIDEOLLAMADA CON DAILY.CO
+        // ========================================
+
+        const callFrame = window.DailyIframe.createFrame(
+            document.getElementById('call-container'), {
+                url: "{{ $dailyUrl }}",
+                showLeaveButton: true,
+                showFullscreenButton: true,
+                iframeStyle: {
+                    width: '100%',
+                    height: '100%',
+                    border: '0',
+                    borderRadius: '8px'
                 }
-            );
+            }
+        );
 
-            // Unirse automáticamente
-            callFrame.join({
-                userName: "{{ $userName }}"
-            });
+        // Unirse automáticamente
+        callFrame.join({
+            userName: "{{ $userName }}"
+        }).then(() => {
+            console.log('✅ Solicitud de unión enviada');
+        }).catch(err => {
+            console.error('❌ Error al unirse:', err);
+            if (loader) {
+                loader.innerHTML = `
+                    <div class="text-center">
+                        <svg class="w-16 h-16 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <p class="text-white font-medium">Error al conectar</p>
+                        <p class="text-gray-400 text-sm mt-2">${err.message || 'Intenta recargar la página'}</p>
+                    </div>
+                `;
+            }
+        });
 
-            console.log('📹 Conectando a Daily.co...');
+        console.log('📹 Conectando a Daily.co...');
 
-            // ========================================
-            // PARTE 2: TRANSCRIPCIÓN CONTINUA CON DEEPGRAM
-            // ========================================
+        // ========================================
+        // PARTE 2: EVENTOS DE DAILY.CO
+        // ========================================
 
-            const notes = document.getElementById('notes');
-            const interimText = document.getElementById('interim-text');
-            const statusIndicator = document.getElementById('transcription-status');
-            const wordCount = document.getElementById('word-count');
-            const charCount = document.getElementById('char-count');
+        callFrame.on('loading', () => {
+            console.log('⏳ Daily.co cargando...');
+        });
 
-            let mediaRecorder = null;
-            let audioChunks = [];
-            let transcripcionCompleta = '';
-            let isRecording = false;
-            let intervalId = null;
+        callFrame.on('loaded', () => {
+            console.log('✅ Daily.co cargado');
+            // ✅ Ocultar loader cuando cargue
+            if (loader) {
+                loader.style.display = 'none';
+            }
+        });
 
-            function updateStats() {
-                const text = notes.value;
-                const words = text.trim().split(/\s+/).filter(w => w.length > 0).length;
-                wordCount.textContent = `${words} palabras`;
-                charCount.textContent = `${text.length} caracteres`;
+        callFrame.on('joined-meeting', (event) => {
+            console.log('✅ Unido a Daily.co:', event);
+            
+            // ✅ Ocultar loader
+            if (loader) {
+                loader.style.display = 'none';
+            }
+            
+            // Actualizar indicador
+            if (statusIndicator) {
+                statusIndicator.textContent = 'En Vivo';
             }
 
-            function enviarAudio(audioBlob) {
-                console.log('📤 Enviando audio a Deepgram:', audioBlob.size, 'bytes');
+            // Registrar asistencia
+            fetch("{{ route('reuniones.asistencia.entrada', $reunion->id) }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                }
+            });
+        });
 
-                const formData = new FormData();
-                formData.append('audio', audioBlob, 'audio.webm');
+        callFrame.on('left-meeting', () => {
+            console.log('👋 Saliendo de Daily.co');
+            detener();
+            if (statusIndicator) {
+                statusIndicator.textContent = 'Desconectado';
+            }
+        });
 
-                interimText.innerHTML = '<span class="text-blue-600 animate-pulse">⏳ Transcribiendo...</span>';
+        callFrame.on('error', (e) => {
+            console.error('❌ Error Daily.co:', e);
+            if (loader) {
+                loader.innerHTML = `
+                    <div class="text-center">
+                        <svg class="w-16 h-16 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <p class="text-white font-medium">Error de conexión</p>
+                        <p class="text-gray-400 text-sm mt-2">Verifica tu conexión e intenta nuevamente</p>
+                        <button onclick="location.reload()" class="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+                            Reintentar
+                        </button>
+                    </div>
+                `;
+            }
+        });
 
-                fetch("{{ route('reuniones.transcripciones.procesar-audio', $reunion->id) }}", {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                        },
-                        body: formData
-                    })
-                    .then(res => {
-                        console.log('📥 Respuesta:', res.status);
-                        return res.json();
-                    })
-                    .then(data => {
-                        console.log('📥 Datos:', data);
+        // ✅ Timeout de seguridad (si no carga en 30 segundos)
+        setTimeout(() => {
+            if (loader && loader.style.display !== 'none') {
+                console.warn('⚠️ Timeout: Ocultando loader forzadamente');
+                loader.style.display = 'none';
+            }
+        }, 30000);
 
-                        if (data.ok && data.texto) {
-                            // ✅ Concatenar en el textarea (acumulativo)
-                            transcripcionCompleta += data.texto + ' ';
-                            notes.value = transcripcionCompleta;
-                            updateStats();
+        // ========================================
+        // PARTE 3: TRANSCRIPCIÓN CONTINUA CON DEEPGRAM
+        // ========================================
 
-                            const preview = data.texto.length > 60 ?
-                                data.texto.substring(0, 60) + '...' :
-                                data.texto;
+        const notes = document.getElementById('notes');
+        const interimText = document.getElementById('interim-text');
+        const statusIndicatorTranscription = document.getElementById('transcription-status');
+        const wordCount = document.getElementById('word-count');
+        const charCount = document.getElementById('char-count');
 
-                            interimText.innerHTML = `<span class="text-green-600">✅ ${preview}</span>`;
-                            console.log('✅ Transcrito y concatenado:', data.texto);
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let transcripcionCompleta = '';
+        let isRecording = false;
+        let intervalId = null;
 
-                            // Auto-scroll al final del textarea
-                            notes.scrollTop = notes.scrollHeight;
+        function updateStats() {
+            const text = notes.value;
+            const words = text.trim().split(/\s+/).filter(w => w.length > 0).length;
+            wordCount.textContent = `${words} palabras`;
+            charCount.textContent = `${text.length} caracteres`;
+        }
 
-                            setTimeout(() => {
-                                if (isRecording) {
-                                    interimText.innerHTML =
-                                        '<span class="text-gray-400">🎤 Escuchando...</span>';
-                                }
-                            }, 3000);
-                        } else {
-                            console.warn('⚠️ Sin texto:', data);
-                            interimText.innerHTML = '<span class="text-yellow-600">⚠️ Silencio detectado</span>';
+        function enviarAudio(audioBlob) {
+            console.log('📤 Enviando audio a Deepgram:', audioBlob.size, 'bytes');
 
-                            setTimeout(() => {
-                                if (isRecording) {
-                                    interimText.innerHTML =
-                                        '<span class="text-gray-400">🎤 Escuchando...</span>';
-                                }
-                            }, 2000);
-                        }
-                    })
-                    .catch(err => {
-                        console.error('❌ Error:', err);
-                        interimText.innerHTML = '<span class="text-red-600">❌ Error al transcribir</span>';
+            const formData = new FormData();
+            formData.append('audio', audioBlob, 'audio.webm');
+
+            interimText.innerHTML = '<span class="text-blue-600 animate-pulse">⏳ Transcribiendo...</span>';
+
+            fetch("{{ route('reuniones.transcripciones.procesar-audio', $reunion->id) }}", {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: formData
+                })
+                .then(res => {
+                    console.log('📥 Respuesta:', res.status);
+                    return res.json();
+                })
+                .then(data => {
+                    console.log('📥 Datos:', data);
+
+                    if (data.ok && data.texto) {
+                        transcripcionCompleta += data.texto + ' ';
+                        notes.value = transcripcionCompleta;
+                        updateStats();
+
+                        const preview = data.texto.length > 60 ?
+                            data.texto.substring(0, 60) + '...' :
+                            data.texto;
+
+                        interimText.innerHTML = `<span class="text-green-600">✅ ${preview}</span>`;
+                        console.log('✅ Transcrito y concatenado:', data.texto);
+
+                        notes.scrollTop = notes.scrollHeight;
 
                         setTimeout(() => {
                             if (isRecording) {
                                 interimText.innerHTML =
-                                    '<span class="text-gray-400">🔄 Reintentando...</span>';
+                                    '<span class="text-gray-400">🎤 Escuchando...</span>';
+                            }
+                        }, 3000);
+                    } else {
+                        console.warn('⚠️ Sin texto:', data);
+                        interimText.innerHTML = '<span class="text-yellow-600">⚠️ Silencio detectado</span>';
+
+                        setTimeout(() => {
+                            if (isRecording) {
+                                interimText.innerHTML =
+                                    '<span class="text-gray-400">🎤 Escuchando...</span>';
                             }
                         }, 2000);
-                    });
-            }
+                    }
+                })
+                .catch(err => {
+                    console.error('❌ Error:', err);
+                    interimText.innerHTML = '<span class="text-red-600">❌ Error al transcribir</span>';
 
-            async function iniciar() {
+                    setTimeout(() => {
+                        if (isRecording) {
+                            interimText.innerHTML =
+                                '<span class="text-gray-400">🔄 Reintentando...</span>';
+                        }
+                    }, 2000);
+                });
+        }
+
+        async function iniciar() {
+            try {
+                interimText.innerHTML = `
+                    <div class="text-blue-700 text-xs">
+                        <strong>📢 Configurando captura de audio...</strong><br>
+                        Espera un momento...
+                    </div>
+                `;
+
+                const displayStream = await navigator.mediaDevices.getDisplayMedia({
+                    audio: {
+                        echoCancellation: false,
+                        noiseSuppression: false,
+                        autoGainControl: false,
+                        sampleRate: 48000,
+                        channelCount: 2
+                    },
+                    video: true
+                });
+
+                const audioTracks = displayStream.getAudioTracks();
+
+                if (audioTracks.length === 0) {
+                    displayStream.getTracks().forEach(track => track.stop());
+
+                    alert('⚠️ NO se compartió el audio del sistema\n\n' +
+                        '🔊 Debes marcar la casilla\n' +
+                        '"Compartir audio de la pestaña"\n\n' +
+                        'Intenta de nuevo.');
+
+                    isRecording = false;
+                    document.getElementById('manual-start-btn').disabled = false;
+                    document.getElementById('manual-stop-btn').disabled = true;
+                    interimText.innerHTML = '<span class="text-red-600">❌ Sin audio del sistema</span>';
+                    return;
+                }
+
+                console.log('✅ Audio del sistema capturado:', audioTracks[0].getSettings());
+
+                displayStream.getVideoTracks().forEach(track => track.stop());
+
+                let micStream;
                 try {
-                    interimText.innerHTML = `
-            <div class="text-blue-700 text-xs">
-                <strong>📢 Configurando captura de audio...</strong><br>
-                Espera un momento...
-            </div>
-        `;
-
-                    // PASO 1: Capturar audio del sistema (Daily.co)
-                    const displayStream = await navigator.mediaDevices.getDisplayMedia({
+                    micStream = await navigator.mediaDevices.getUserMedia({
                         audio: {
                             echoCancellation: false,
                             noiseSuppression: false,
                             autoGainControl: false,
-                            sampleRate: 48000,
-                            channelCount: 2
-                        },
-                        video: true
+                            sampleRate: 48000
+                        }
                     });
 
-                    const audioTracks = displayStream.getAudioTracks();
+                    console.log('✅ Micrófono capturado:', micStream.getAudioTracks()[0].getSettings());
+                } catch (micError) {
+                    console.warn('⚠️ No se pudo capturar micrófono:', micError);
 
-                    if (audioTracks.length === 0) {
-                        displayStream.getTracks().forEach(track => track.stop());
-
-                        alert('⚠️ NO se compartió el audio del sistema\n\n' +
-                            '🔊 Debes marcar la casilla\n' +
-                            '"Compartir audio de la pestaña"\n\n' +
-                            'Intenta de nuevo.');
-
-                        isRecording = false;
-                        document.getElementById('manual-start-btn').disabled = false;
-                        document.getElementById('manual-stop-btn').disabled = true;
-                        interimText.innerHTML = '<span class="text-red-600">❌ Sin audio del sistema</span>';
-                        return;
-                    }
-
-                    console.log('✅ Audio del sistema capturado:', audioTracks[0].getSettings());
-
-                    // Detener video (solo queremos audio)
-                    displayStream.getVideoTracks().forEach(track => track.stop());
-
-                    // PASO 2: Capturar micrófono local
-                    let micStream;
-                    try {
-                        micStream = await navigator.mediaDevices.getUserMedia({
-                            audio: {
-                                echoCancellation: false,
-                                noiseSuppression: false,
-                                autoGainControl: false,
-                                sampleRate: 48000
-                            }
-                        });
-
-                        console.log('✅ Micrófono capturado:', micStream.getAudioTracks()[0].getSettings());
-                    } catch (micError) {
-                        console.warn('⚠️ No se pudo capturar micrófono:', micError);
-
-                        // Continuar solo con audio del sistema
-                        const audioStream = new MediaStream(audioTracks);
-                        iniciarGrabacion(audioStream, audioTracks);
-                        return;
-                    }
-
-                    // PASO 3: Mezclar ambos audios usando AudioContext
-                    const audioContext = new AudioContext();
-
-                    // Fuente 1: Audio del sistema (Daily.co)
-                    const systemSource = audioContext.createMediaStreamSource(
-                        new MediaStream(audioTracks)
-                    );
-
-                    // Fuente 2: Micrófono
-                    const micSource = audioContext.createMediaStreamSource(micStream);
-
-                    // Destino: Stream mezclado
-                    const destination = audioContext.createMediaStreamDestination();
-
-                    // Conectar ambas fuentes al destino
-                    systemSource.connect(destination);
-                    micSource.connect(destination);
-
-                    console.log('✅ Audios mezclados:', {
-                        sistema: audioTracks[0].label,
-                        microfono: micStream.getAudioTracks()[0].label
-                    });
-
-                    // Usar el stream mezclado para grabación
-                    iniciarGrabacion(destination.stream, [
-                        ...audioTracks,
-                        ...micStream.getAudioTracks()
-                    ]);
-
-                } catch (error) {
-                    console.error('❌ Error:', error);
-
-                    let mensaje = '❌ Error al capturar audio';
-
-                    if (error.name === 'NotAllowedError') {
-                        mensaje = '⚠️ Permiso denegado\n\n' +
-                            'Debes dar permiso para:\n' +
-                            '1. Compartir la pestaña con audio\n' +
-                            '2. Usar tu micrófono';
-                    } else if (error.name === 'NotFoundError') {
-                        mensaje = '⚠️ No se encontró audio\n\n' +
-                            'Verifica que:\n' +
-                            '1. La pestaña tenga audio activo\n' +
-                            '2. Tu micrófono esté conectado';
-                    }
-
-                    alert(mensaje);
-                    isRecording = false;
-                    document.getElementById('manual-start-btn').disabled = false;
-                    document.getElementById('manual-stop-btn').disabled = true;
-                    interimText.innerHTML = '<span class="text-red-600">❌ Error</span>';
+                    const audioStream = new MediaStream(audioTracks);
+                    iniciarGrabacion(audioStream, audioTracks);
+                    return;
                 }
-            }
 
-            // Nueva función auxiliar para iniciar grabación
-            function iniciarGrabacion(audioStream, tracks) {
-                const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ?
-                    'audio/webm;codecs=opus' :
-                    'audio/webm';
+                const audioContext = new AudioContext();
 
-                mediaRecorder = new MediaRecorder(audioStream, {
-                    mimeType: mimeType,
-                    audioBitsPerSecond: 128000
+                const systemSource = audioContext.createMediaStreamSource(
+                    new MediaStream(audioTracks)
+                );
+
+                const micSource = audioContext.createMediaStreamSource(micStream);
+
+                const destination = audioContext.createMediaStreamDestination();
+
+                systemSource.connect(destination);
+                micSource.connect(destination);
+
+                console.log('✅ Audios mezclados:', {
+                    sistema: audioTracks[0].label,
+                    microfono: micStream.getAudioTracks()[0].label
                 });
 
-                console.log('🎤 MediaRecorder configurado:', mediaRecorder.mimeType);
+                iniciarGrabacion(destination.stream, [
+                    ...audioTracks,
+                    ...micStream.getAudioTracks()
+                ]);
 
-                mediaRecorder.ondataavailable = (e) => {
-                    if (e.data && e.data.size > 0) {
-                        console.log('📦 Chunk recibido:', e.data.size, 'bytes');
-                        audioChunks.push(e.data);
-                    }
-                };
+            } catch (error) {
+                console.error('❌ Error:', error);
 
-                mediaRecorder.onstop = () => {
-                    console.log('🛑 Grabación detenida, chunks:', audioChunks.length);
+                let mensaje = '❌ Error al capturar audio';
 
-                    if (audioChunks.length > 0) {
-                        const audioBlob = new Blob(audioChunks, {
-                            type: 'audio/webm'
-                        });
-                        console.log('📦 Blob creado:', audioBlob.size, 'bytes');
+                if (error.name === 'NotAllowedError') {
+                    mensaje = '⚠️ Permiso denegado\n\n' +
+                        'Debes dar permiso para:\n' +
+                        '1. Compartir la pestaña con audio\n' +
+                        '2. Usar tu micrófono';
+                } else if (error.name === 'NotFoundError') {
+                    mensaje = '⚠️ No se encontró audio\n\n' +
+                        'Verifica que:\n' +
+                        '1. La pestaña tenga audio activo\n' +
+                        '2. Tu micrófono esté conectado';
+                }
 
-                        if (audioBlob.size > 5000) {
-                            enviarAudio(audioBlob);
-                        } else {
-                            console.warn('⚠️ Blob muy pequeño, descartando');
-                        }
-
-                        audioChunks = [];
-                    }
-                };
-
-                mediaRecorder.onerror = (e) => {
-                    console.error('❌ Error MediaRecorder:', e);
-                };
-
-                // Iniciar grabación
-                mediaRecorder.start();
-                console.log('🎤 Grabación iniciada con ambos audios');
-
-                // Enviar cada 15 segundos
-                intervalId = setInterval(() => {
-                    if (mediaRecorder && mediaRecorder.state === 'recording' && isRecording) {
-                        console.log('⏱️ Intervalo: procesando audio...');
-                        mediaRecorder.stop();
-
-                        setTimeout(() => {
-                            if (isRecording && tracks[0].readyState === 'live') {
-                                console.log('🔄 Reiniciando grabación...');
-                                mediaRecorder.start();
-                            } else {
-                                console.warn('⚠️ Pista inactiva, deteniendo');
-                                detener();
-                            }
-                        }, 1000);
-                    }
-                }, 15000);
-
-                statusIndicator.textContent = '🔴 Grabando (Sistema + Micrófono)';
-                statusIndicator.className =
-                    'text-xs text-center px-3 py-2 rounded-lg bg-red-500 text-white font-medium mb-3 animate-pulse';
-                document.getElementById('manual-start-btn').disabled = true;
-                document.getElementById('manual-stop-btn').disabled = false;
-                interimText.innerHTML =
-                    '<span class="text-green-600">✅ Capturando: TODOS + Tu Micrófono</span>';
-
-                console.log('✅ Sistema de transcripción completa activo');
-            }
-
-            function detener() {
+                alert(mensaje);
                 isRecording = false;
-
-                if (intervalId) {
-                    clearInterval(intervalId);
-                    intervalId = null;
-                }
-
-                if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-                    mediaRecorder.stop();
-                }
-
-                statusIndicator.textContent = '⏸️ Detenida';
-                statusIndicator.className = 'text-xs text-center px-3 py-2 rounded-lg bg-gray-100 text-gray-600 mb-3';
                 document.getElementById('manual-start-btn').disabled = false;
                 document.getElementById('manual-stop-btn').disabled = true;
-                interimText.innerHTML = '<span class="text-gray-400">Transcripción detenida</span>';
-
-                console.log('⏹️ Transcripción detenida');
+                interimText.innerHTML = '<span class="text-red-600">❌ Error</span>';
             }
+        }
 
-            document.getElementById('manual-start-btn').addEventListener('click', () => {
-                isRecording = true;
-                iniciar();
+        function iniciarGrabacion(audioStream, tracks) {
+            const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ?
+                'audio/webm;codecs=opus' :
+                'audio/webm';
+
+            mediaRecorder = new MediaRecorder(audioStream, {
+                mimeType: mimeType,
+                audioBitsPerSecond: 128000
             });
 
-            document.getElementById('manual-stop-btn').addEventListener('click', detener);
+            console.log('🎤 MediaRecorder configurado:', mediaRecorder.mimeType);
 
-            // ========================================
-            // PARTE 3: EVENTOS DE DAILY.CO
-            // ========================================
+            mediaRecorder.ondataavailable = (e) => {
+                if (e.data && e.data.size > 0) {
+                    console.log('📦 Chunk recibido:', e.data.size, 'bytes');
+                    audioChunks.push(e.data);
+                }
+            };
 
-            callFrame.on('joined-meeting', () => {
-                console.log('✅ Unido a Daily.co');
+            mediaRecorder.onstop = () => {
+                console.log('🛑 Grabación detenida, chunks:', audioChunks.length);
 
-                fetch("{{ route('reuniones.asistencia.entrada', $reunion->id) }}", {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                    }
-                });
-            });
-
-            callFrame.on('left-meeting', () => {
-                console.log('👋 Saliendo de Daily.co');
-                detener();
-            });
-
-            callFrame.on('error', (e) => {
-                console.error('❌ Error Daily.co:', e);
-            });
-
-            window.addEventListener('beforeunload', () => {
-                detener();
-                navigator.sendBeacon("{{ route('reuniones.asistencia.salida', $reunion->id) }}", '');
-                callFrame.leave();
-            });
-
-            // ========================================
-            // PARTE 4: GUARDAR NOTAS
-            // ========================================
-
-            const btnGuardar = document.getElementById('btn-guardar');
-            if (btnGuardar) {
-                btnGuardar.addEventListener('click', () => {
-                    const contenido = notes.value.trim();
-
-                    if (!contenido) {
-                        alert("⚠️ No hay transcripción para guardar");
-                        return;
-                    }
-
-                    btnGuardar.disabled = true;
-                    btnGuardar.textContent = '⏳ Guardando...';
-
-                    fetch("{{ route('actas.store', $reunion->id) }}", {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                            },
-                            body: JSON.stringify({
-                                contenido
-                            })
-                        })
-                        .then(res => res.json())
-                        .then(() => {
-                            alert("✅ Notas guardadas correctamente");
-                            btnGuardar.textContent = '💾 Guardar notas';
-                        })
-                        .catch(() => {
-                            alert("❌ Error al guardar");
-                            btnGuardar.textContent = '💾 Guardar notas';
-                        })
-                        .finally(() => {
-                            btnGuardar.disabled = false;
-                        });
-                });
-            }
-
-            // ========================================
-            // PARTE 5: COPIAR LINK DE LA VIDEOLLAMADA
-            // ========================================
-
-            const copyLinkBtn = document.getElementById('copy-link-btn');
-            const dailyUrl = "{{ $dailyUrl }}";
-
-            if (copyLinkBtn) {
-                copyLinkBtn.addEventListener('click', () => {
-                    navigator.clipboard.writeText(dailyUrl).then(() => {
-                        const originalText = copyLinkBtn.innerHTML;
-                        copyLinkBtn.innerHTML = '✅ ¡Copiado!';
-                        copyLinkBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
-                        copyLinkBtn.classList.add('bg-green-800');
-
-                        setTimeout(() => {
-                            copyLinkBtn.innerHTML = originalText;
-                            copyLinkBtn.classList.remove('bg-green-800');
-                            copyLinkBtn.classList.add('bg-green-600', 'hover:bg-green-700');
-                        }, 2000);
-
-                        console.log('📋 Link copiado:', dailyUrl);
-                    }).catch(err => {
-                        console.error('Error al copiar:', err);
-                        alert('No se pudo copiar el link. Aquí está:\n\n' + dailyUrl);
+                if (audioChunks.length > 0) {
+                    const audioBlob = new Blob(audioChunks, {
+                        type: 'audio/webm'
                     });
-                });
+                    console.log('📦 Blob creado:', audioBlob.size, 'bytes');
+
+                    if (audioBlob.size > 5000) {
+                        enviarAudio(audioBlob);
+                    } else {
+                        console.warn('⚠️ Blob muy pequeño, descartando');
+                    }
+
+                    audioChunks = [];
+                }
+            };
+
+            mediaRecorder.onerror = (e) => {
+                console.error('❌ Error MediaRecorder:', e);
+            };
+
+            mediaRecorder.start();
+            console.log('🎤 Grabación iniciada');
+
+            intervalId = setInterval(() => {
+                if (mediaRecorder && mediaRecorder.state === 'recording' && isRecording) {
+                    console.log('⏱️ Intervalo: procesando audio...');
+                    mediaRecorder.stop();
+
+                    setTimeout(() => {
+                        if (isRecording && tracks[0].readyState === 'live') {
+                            console.log('🔄 Reiniciando grabación...');
+                            mediaRecorder.start();
+                        } else {
+                            console.warn('⚠️ Pista inactiva, deteniendo');
+                            detener();
+                        }
+                    }, 1000);
+                }
+            }, 15000);
+
+            statusIndicatorTranscription.innerHTML = `
+                <div class="flex items-center justify-center gap-2">
+                    <span class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                    <span class="text-red-300">Grabando</span>
+                </div>
+            `;
+            statusIndicatorTranscription.className =
+                'text-xs text-center px-4 py-3 rounded-xl bg-red-900 text-white border border-red-700';
+            document.getElementById('manual-start-btn').disabled = true;
+            document.getElementById('manual-stop-btn').disabled = false;
+            interimText.innerHTML =
+                '<span class="text-green-600">✅ Capturando: TODOS + Tu Micrófono</span>';
+
+            console.log('✅ Sistema de transcripción completa activo');
+        }
+
+        function detener() {
+            isRecording = false;
+
+            if (intervalId) {
+                clearInterval(intervalId);
+                intervalId = null;
             }
 
-            console.log('🎉 Sistema completo listo');
-        })();
-    </script>
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+            }
 
-    {{-- Modal de compartir link --}}
-    <div id="share-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 p-6">
-            <div class="flex justify-between items-start mb-4">
-                <h3 class="text-xl font-bold text-gray-900">🔗 Compartir Videollamada</h3>
-                <button id="close-modal" class="text-gray-400 hover:text-gray-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
-                        </path>
-                    </svg>
-                </button>
-            </div>
+            statusIndicatorTranscription.innerHTML = `
+                <div class="flex items-center justify-center gap-2">
+                    <span class="w-2 h-2 bg-gray-500 rounded-full"></span>
+                    Detenida
+                </div>
+            `;
+            statusIndicatorTranscription.className = 'text-xs text-center px-4 py-3 rounded-xl bg-gray-700 text-gray-300 border border-gray-600';
+            document.getElementById('manual-start-btn').disabled = false;
+            document.getElementById('manual-stop-btn').disabled = true;
+            interimText.innerHTML = '<span class="text-gray-400">Transcripción detenida</span>';
 
-            <p class="text-sm text-gray-600 mb-4">
-                Comparte este link con los participantes para que se unan a la videollamada:
-            </p>
+            console.log('⏹️ Transcripción detenida');
+        }
 
-            <div class="bg-gray-50 rounded-lg p-3 mb-4 break-all text-sm font-mono">
-                {{ $dailyUrl }}
-            </div>
+        document.getElementById('manual-start-btn').addEventListener('click', () => {
+            isRecording = true;
+            iniciar();
+        });
 
-            <div class="flex gap-2">
-                <button id="copy-modal-btn"
-                    class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
-                    📋 Copiar Link
-                </button>
-                <button id="close-modal-btn"
-                    class="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
-                    Cerrar
-                </button>
-            </div>
-        </div>
-    </div>
+        document.getElementById('manual-stop-btn').addEventListener('click', detener);
+
+        window.addEventListener('beforeunload', () => {
+            detener();
+            navigator.sendBeacon("{{ route('reuniones.asistencia.salida', $reunion->id) }}", '');
+            callFrame.leave();
+        });
+
+        // ========================================
+        // PARTE 4: GUARDAR NOTAS
+        // ========================================
+
+        const btnGuardar = document.getElementById('btn-guardar');
+        if (btnGuardar) {
+            btnGuardar.addEventListener('click', () => {
+                const contenido = notes.value.trim();
+
+                if (!contenido) {
+                    alert("⚠️ No hay transcripción para guardar");
+                    return;
+                }
+
+                btnGuardar.disabled = true;
+                btnGuardar.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> Guardando...';
+
+                fetch("{{ route('actas.store', $reunion->id) }}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        },
+                        body: JSON.stringify({
+                            contenido
+                        })
+                    })
+                    .then(res => res.json())
+                    .then(() => {
+                        alert("✅ Notas guardadas correctamente");
+                        btnGuardar.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg> Guardar Notas';
+                    })
+                    .catch(() => {
+                        alert("❌ Error al guardar");
+                        btnGuardar.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg> Guardar Notas';
+                    })
+                    .finally(() => {
+                        btnGuardar.disabled = false;
+                    });
+            });
+        }
+
+        // ========================================
+        // PARTE 5: COPIAR LINK DE LA VIDEOLLAMADA
+        // ========================================
+
+        const copyLinkBtn = document.getElementById('copy-link-btn');
+        const dailyUrl = "{{ $dailyUrl }}";
+
+        if (copyLinkBtn) {
+            copyLinkBtn.addEventListener('click', () => {
+                navigator.clipboard.writeText(dailyUrl).then(() => {
+                    const originalHTML = copyLinkBtn.innerHTML;
+                    copyLinkBtn.innerHTML = '<svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg><span class="hidden sm:inline">¡Copiado!</span>';
+                    copyLinkBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
+                    copyLinkBtn.classList.add('bg-green-800');
+
+                    setTimeout(() => {
+                        copyLinkBtn.innerHTML = originalHTML;
+                        copyLinkBtn.classList.remove('bg-green-800');
+                        copyLinkBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+                    }, 2000);
+
+                    console.log('📋 Link copiado:', dailyUrl);
+                }).catch(err => {
+                    console.error('Error al copiar:', err);
+                    alert('No se pudo copiar el link. Aquí está:\n\n' + dailyUrl);
+                });
+            });
+        }
+
+        console.log('🎉 Sistema completo listo');
+    })();
+</script>
 @endsection

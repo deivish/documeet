@@ -9,64 +9,51 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\Messages\BroadcastMessage;
 
-class InvitacionReunion extends Notification
+class InvitacionReunion extends Notification implements ShouldQueue
 {
     use Queueable;
 
     public $reunion;
-    /**
-     * Create a new notification instance.
-     */
+
     public function __construct(Reunion $reunion)
     {
         $this->reunion = $reunion;
     }
 
-    /**
-     * Get the notification's delivery channels.
-     *
-     * @return array<int, string>
-     */
     public function via(object $notifiable): array
     {
         return ['mail', 'database', 'broadcast'];
     }
 
-    /**
-     * Get the mail representation of the notification.
-     */
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
             ->subject('Nueva invitación a una reunión')
             ->greeting('Hola ' . $notifiable->name)
             ->line('Has sido invitado a la reunión: ' . $this->reunion->titulo)
-            ->line('Fecha y hora: ' . $this->reunion->fecha_hora)
+            ->line('Fecha y hora: ' . $this->reunion->fecha_hora->format('d/m/Y H:i'))
             ->action('Ver detalles', url('/reuniones/' . $this->reunion->id))
-            ->line('Gracias por usar nuestra aplicación.');
-
+            ->line('Gracias por usar DocuMeet.');
     }
 
-    /**
-     * Get the array representation of the notification.
-     *
-     * @return array<string, mixed>
-     */
-    public function toArray(object $notifiable): array
+    public function toDatabase(object $notifiable): array
     {
         return [
             'titulo' => $this->reunion->titulo,
-            'fecha_hora' => $this->reunion->fecha_hora,
+            'fecha_hora' => $this->reunion->fecha_hora->toIso8601String(),
             'reunion_id' => $this->reunion->id,
+            'organizador' => $this->reunion->user->name,
         ];
     }
 
-    public function toBroadcast($notifiable)
+    public function toBroadcast(object $notifiable): BroadcastMessage
     {
-    return new BroadcastMessage([
-        'titulo' => $this->reunion->titulo,
-        'fecha_hora' => $this->reunion->fecha_hora,
-        'reunion_id' => $this->reunion->id,
-    ]);
-}
+        return new BroadcastMessage([
+            'titulo' => $this->reunion->titulo,
+            'fecha_hora' => $this->reunion->fecha_hora->toIso8601String(),
+            'reunion_id' => $this->reunion->id,
+            'organizador' => $this->reunion->user->name,
+            'mensaje' => "Te han invitado a la reunión: {$this->reunion->titulo}",
+        ]);
+    }
 }

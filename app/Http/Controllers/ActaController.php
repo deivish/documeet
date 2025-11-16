@@ -7,11 +7,13 @@ use App\Models\Reunion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 use PhpOffice\PhpWord\PhpWord;
 use PhpOffice\PhpWord\IOFactory;
 use App\Notifications\ActaGenerada;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\Actividad;
+use App\Services\ClaudeService;
 
 class ActaController extends Controller
 {
@@ -84,9 +86,9 @@ class ActaController extends Controller
         foreach ($acta->reunion->actividades as $actividad) {
             $section->addListItem(
                 $actividad->nombre .
-                " — Responsable: " . ($actividad->responsable ?? 'Sin asignar') .
-                " — Fecha límite: " . \Carbon\Carbon::parse($actividad->fecha_entrega)->format('d/m/Y') .
-                " — " . ($actividad->descripcion ?? '')
+                    " — Responsable: " . ($actividad->responsable ?? 'Sin asignar') .
+                    " — Fecha límite: " . \Carbon\Carbon::parse($actividad->fecha_entrega)->format('d/m/Y') .
+                    " — " . ($actividad->descripcion ?? '')
             );
         }
 
@@ -109,90 +111,204 @@ class ActaController extends Controller
     public function show(Acta $acta)
     {
         $reunion = $acta->reunion;
-        $reunion->load('actividades');
+        $reunion->load('actividades', 'compromisos');
         return view('actas.show', compact('acta', 'reunion'));
     }
 
     public function descargarPdf(Acta $acta)
-{
-    // Cargar relaciones que usará la vista
-    $acta->load(['reunion.actividades']);
+    {
+        // Cargar relaciones que usará la vista
+        $acta->load(['reunion.actividades', 'reunion.compromisos']);
 
-    // Renderizar la vista con los datos actuales
-    $html = view('actas.pdf', compact('acta'))->render();
+        // Renderizar la vista con los datos actuales
+        $html = view('actas.pdf', compact('acta'))->render();
 
-    // Generar y descargar
-    $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadHTML($html);
+        // Generar y descargar
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadHTML($html);
 
-    // Opción A: forzar descarga
-    return $pdf->stream('acta-'.$acta->id.'.pdf', [
-        'Attachment' => false // 👈 false = inline (no descarga)
-    ]);
-
-    // Opción B (si prefieres ver en navegador):
-    // return $pdf->stream('acta-'.$acta->id.'.pdf');
-}
-
-// Guardar una actividad desde el acta
-public function storeActividad(Request $request, Acta $acta)
-{
-    $data = $request->validate([
-        'nombre' => 'required|string',
-        'responsable' => 'required|string',
-        'fecha_entrega' => 'required|date',
-        'descripcion' => 'nullable|string',
-    ]);
-
-    $actividad = $acta->reunion->actividades()->create($data);
-
-    return response()->json([
-        'ok' => true,
-        'actividad' => [
-            'id' => $actividad->id,
-            'nombre' => $actividad->nombre,
-            'responsable' => $actividad->responsable,
-            'fecha_entrega' => \Carbon\Carbon::parse($actividad->fecha_entrega)->format('d/m/Y'),
-            'descripcion' => $actividad->descripcion,
-        ]
-    ]);
-}
-
-// Eliminar actividad
-public function destroyActividad($id)
-{
-    $actividad = Actividad::find($id);
-
-    if (!$actividad) {
-        return response()->json(['ok' => false, 'message' => 'Actividad no encontrada'], 404);
+        // Opción A: forzar descarga
+        return $pdf->stream('acta-' . $acta->id . '.pdf', [
+            'Attachment' => false // 👈 false = inline (no descarga)
+        ]);
     }
 
-    $actividad->delete();
-    return response()->json(['ok' => true]);
-}
+    // Guardar una actividad desde el acta
+    public function storeActividad(Request $request, Acta $acta)
+    {
+        $data = $request->validate([
+            'nombre' => 'required|string',
+            'responsable' => 'required|string',
+            'fecha_entrega' => 'required|date',
+            'descripcion' => 'nullable|string',
+        ]);
 
-public function updateActividad(Request $request, $id)
+        $actividad = $acta->reunion->actividades()->create($data);
+
+        return response()->json([
+            'ok' => true,
+            'actividad' => [
+                'id' => $actividad->id,
+                'nombre' => $actividad->nombre,
+                'responsable' => $actividad->responsable,
+                'fecha_entrega' => \Carbon\Carbon::parse($actividad->fecha_entrega)->format('d/m/Y'),
+                'descripcion' => $actividad->descripcion,
+            ]
+        ]);
+    }
+
+    // Eliminar actividad
+    public function destroyActividad($id)
+    {
+        $actividad = Actividad::find($id);
+
+        if (!$actividad) {
+            return response()->json(['ok' => false, 'message' => 'Actividad no encontrada'], 404);
+        }
+
+        $actividad->delete();
+        return response()->json(['ok' => true]);
+    }
+
+    public function updateActividad(Request $request, $id)
+    {
+        $actividad = \App\Models\Actividad::findOrFail($id);
+
+        $data = $request->validate([
+            'nombre' => 'required|string',
+            'responsable' => 'required|string',
+            'fecha_entrega' => 'required|date',
+            'descripcion' => 'nullable|string',
+        ]);
+
+        $actividad->update($data);
+
+        return response()->json([
+            'ok' => true,
+            'actividad' => [
+                'id' => $actividad->id,
+                'nombre' => $actividad->nombre,
+                'responsable' => $actividad->responsable,
+                'fecha_entrega' => \Carbon\Carbon::parse($actividad->fecha_entrega)->format('d/m/Y'),
+                'descripcion' => $actividad->descripcion,
+            ]
+        ]);
+    }
+
+    public function extraerCompromisos(Request $request, Acta $acta)
+    {
+        try {
+            // Obtener transcripción completa de la reunión
+            $transcripcion = $acta->reunion->transcripciones()
+                ->where('fuente', 'deepgram')
+                ->orderBy('created_at', 'asc')
+                ->pluck('contenido')
+                ->implode("\n\n");
+
+            if (empty($transcripcion)) {
+                return response()->json([
+                    'ok' => false,
+                    'error' => 'No hay transcripción disponible'
+                ], 400);
+            }
+
+            Log::info('🚀 Iniciando extracción de compromisos con Claude', [
+                'acta_id' => $acta->id,
+                'longitud_transcripcion' => strlen($transcripcion)
+            ]);
+
+            // ✅ Usar Claude en lugar de Gemini
+            $claudeService = new ClaudeService();
+            $compromisosExtraidos = $claudeService->extraerCompromisos($transcripcion);
+
+            // Guardar compromisos en la base de datos
+            $compromisosGuardados = [];
+            foreach ($compromisosExtraidos as $comp) {
+                $compromiso = $acta->reunion->compromisos()->create([
+                    'descripcion' => $comp['descripcion'],
+                    'responsable' => $comp['responsable'],
+                    'fecha' => $comp['fecha'],
+                    'resultado' => $comp['resultado']
+                ]);
+
+                $compromisosGuardados[] = [
+                    'id' => $compromiso->id,
+                    'descripcion' => $compromiso->descripcion,
+                    'responsable' => $compromiso->responsable,
+                    'fecha' => \Carbon\Carbon::parse($compromiso->fecha)->format('d/m/Y'),
+                    'resultado' => $compromiso->resultado
+                ];
+            }
+
+            Log::info('✅ Compromisos guardados exitosamente', [
+                'cantidad' => count($compromisosGuardados)
+            ]);
+
+            return response()->json([
+                'ok' => true,
+                'compromisos' => $compromisosGuardados,
+                'total' => count($compromisosGuardados)
+            ]);
+        } catch (\Exception $e) {
+            Log::error('❌ Error extrayendo compromisos', [
+                'error' => $e->getMessage(),
+                'acta_id' => $acta->id
+            ]);
+
+            return response()->json([
+                'ok' => false,
+                'error' => 'Error al extraer compromisos: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function generarResumen(Request $request, Acta $acta)
+    {
+        try {
+            $transcripcion = $acta->reunion->transcripciones()
+                ->where('fuente', 'deepgram')
+                ->orderBy('created_at', 'asc')
+                ->pluck('contenido')
+                ->implode("\n\n");
+
+            if (empty($transcripcion)) {
+                return response()->json([
+                    'ok' => false,
+                    'error' => 'No hay transcripción disponible'
+                ], 400);
+            }
+
+            // ✅ Usar Claude en lugar de Gemini
+            $claudeService = new ClaudeService();
+            $resumen = $claudeService->generarResumen($transcripcion);
+
+            // Actualizar acta con resumen
+            $acta->update([
+                'resumen' => $resumen
+            ]);
+
+            return response()->json([
+                'ok' => true,
+                'resumen' => $resumen
+            ]);
+        } catch (\Exception $e) {
+            Log::error('❌ Error generando resumen: ' . $e->getMessage());
+
+            return response()->json([
+                'ok' => false,
+                'error' => 'Error al generar resumen'
+            ], 500);
+        }
+    }
+
+    /**
+ * Descargar DOCX generado dinámicamente
+ */
+public function descargarDocx(Acta $acta)
 {
-    $actividad = \App\Models\Actividad::findOrFail($id);
+    // Cargar relaciones necesarias
+    $acta->load(['reunion.actividades', 'reunion.compromisos']);
 
-    $data = $request->validate([
-        'nombre' => 'required|string',
-        'responsable' => 'required|string',
-        'fecha_entrega' => 'required|date',
-        'descripcion' => 'nullable|string',
-    ]);
-
-    $actividad->update($data);
-
-    return response()->json([
-        'ok' => true,
-        'actividad' => [
-            'id' => $actividad->id,
-            'nombre' => $actividad->nombre,
-            'responsable' => $actividad->responsable,
-            'fecha_entrega' => \Carbon\Carbon::parse($actividad->fecha_entrega)->format('d/m/Y'),
-            'descripcion' => $actividad->descripcion,
-        ]
-    ]);
+    // Renderizar vista que genera el DOCX
+    return view('actas.docx', compact('acta'));
 }
-
 }
