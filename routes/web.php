@@ -11,13 +11,12 @@ use App\Http\Controllers\ReunionController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\TranscripcionController;
 use App\Http\Controllers\VideoCallController;
-use App\Http\Controllers\AudioController;
 
 Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('register', [RegisterController::class, 'index'])-> name('register');
+Route::get('register', [RegisterController::class, 'index'])->name('register');
 Route::post('register', [RegisterController::class, 'store']);
 
 Route::get('/muro', [PostController::class, 'index'])->middleware('auth')->name('post.index');
@@ -48,25 +47,22 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/reuniones/{reunion}/videollamada', [VideoCallController::class, 'join'])->name('reuniones.videollamada');
 
     // Transcripciones
-    Route::post('/reuniones/{id}/audio', [AudioController::class, 'store'])->name('audio.store');
-    Route::post('reuniones/{reunion}/transcripciones', [TranscripcionController::class,'store'])->name('reuniones.transcripciones.store');
-    Route::resource('transcripciones', TranscripcionController::class);
-    // routes/web.php
-    
+    Route::post('reuniones/{reunion}/transcripciones', [TranscripcionController::class, 'store'])->name('reuniones.transcripciones.store');
+    Route::get('reuniones/{reunion}/transcripciones/last', [TranscripcionController::class, 'showLast'])->name('reuniones.transcripciones.last');
 
     // Actas
-    Route::get('reuniones/{reunion}/acta/create', [ActaController::class,'create'])->name('actas.create');
-    Route::post('reuniones/{reunion}/acta', [ActaController::class,'store'])->name('actas.store');
-    Route::post('actas/{acta}/finalizar', [ActaController::class,'finalizar'])->name('actas.finalizar');
-    Route::get('actas/{acta}/pdf', [ActaController::class,'exportPdf'])->name('actas.exportPdf');
-    Route::get('actas/{acta}', [ActaController::class,'show'])->name('actas.show');
+    Route::get('reuniones/{reunion}/acta/create', [ActaController::class, 'create'])->name('actas.create');
+    Route::post('reuniones/{reunion}/acta', [ActaController::class, 'store'])->name('actas.store');
+    Route::post('actas/{acta}/finalizar', [ActaController::class, 'finalizar'])->name('actas.finalizar');
+    Route::get('actas/{acta}/pdf', [ActaController::class, 'exportPdf'])->name('actas.exportPdf');
+    Route::get('actas/{acta}', [ActaController::class, 'show'])->name('actas.show');
     Route::get('actas/{acta}/pdf', [ActaController::class, 'descargarPdf'])
-    ->name('actas.pdf');
+        ->name('actas.pdf');
 
 
     // Asistencia
-    Route::post('reuniones/{reunion}/asistencia/entrada', [AsistenciaController::class,'entrada'])->name('reuniones.asistencia.entrada');
-    Route::post('reuniones/{reunion}/asistencia/salida', [AsistenciaController::class,'salida'])->name('reuniones.asistencia.salida');
+    Route::post('reuniones/{reunion}/asistencia/entrada', [AsistenciaController::class, 'entrada'])->name('reuniones.asistencia.entrada');
+    Route::post('reuniones/{reunion}/asistencia/salida', [AsistenciaController::class, 'salida'])->name('reuniones.asistencia.salida');
 
 
     // Guardar un compromiso en una reunión
@@ -86,4 +82,30 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/actas/{acta}/actividades', [ActaController::class, 'storeActividad'])->name('actas.actividades.store');
     Route::delete('/actas/actividades/{actividad}', [ActaController::class, 'destroyActividad'])->name('actas.actividades.destroy');
     Route::put('/actas/actividades/{actividad}', [ActaController::class, 'updateActividad'])->name('actas.actividades.update');
+
+
+    // Transcripciones
+    Route::post('reuniones/{reunion}/transcripciones', [TranscripcionController::class, 'store'])
+        ->name('reuniones.transcripciones.store');
+    Route::get('reuniones/{reunion}/transcripciones/last', [TranscripcionController::class, 'showLast'])
+        ->name('reuniones.transcripciones.last');
+    Route::get('reuniones/{reunion}/transcripciones/all', [TranscripcionController::class, 'getAll'])
+        ->name('reuniones.transcripciones.all');
+    Route::get('reuniones/{reunion}/transcripciones', [TranscripcionController::class, 'index'])
+        ->name('reuniones.transcripciones.index');
+
+    Route::post('reuniones/{reunion}/transcripciones/procesar-audio', [TranscripcionController::class, 'procesarAudio'])
+        ->name('reuniones.transcripciones.procesar-audio');
+
+    // Rutas de IA para actas
+    Route::post('/actas/{acta}/extraer-compromisos', [ActaController::class, 'extraerCompromisos'])
+        ->name('actas.extraer-compromisos')
+        ->middleware('auth');
+
+    Route::post('/actas/{acta}/generar-resumen', [ActaController::class, 'generarResumen'])
+        ->name('actas.generar-resumen')
+        ->middleware('auth');
+
+    Route::get('actas/{acta}/docx', [ActaController::class, 'descargarDocx'])
+    ->name('actas.docx');
 });

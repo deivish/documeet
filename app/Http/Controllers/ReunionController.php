@@ -237,20 +237,35 @@ public function destroy(Reunion $reunion)
         return view('reuniones.history', compact('reunionesOrganizadas', 'reunionesInvitado'));
     }
 
-    //Detalles de una reunion
-    public function detalleHistorial(Reunion $reunion)
-    {
-        // $this->authorize('verReunionHistorial', $reunion); // opcional: política de acceso
+    //Detalles de una reunion del historial
+public function detalleHistorial($id)
+{
+    // ✅ Usar withTrashed() para incluir reuniones eliminadas
+    $reunion = Reunion::withTrashed()->findOrFail($id);
 
-        $invitados = $reunion->invitados()->get();
-
-        // Cargar actividades que no han sido soft deleted
-        $reunion->load(['actividades' => function ($query) {
-            $query->whereNull('deleted_at');
-        }]);
-
-        return view('reuniones.detail_history', compact('reunion', 'invitados'));
+    // Verificar que el usuario tiene acceso a esta reunión
+    $user = Auth::user();
+    
+    $esOrganizador = $reunion->user_id === $user->id;
+    
+    // ✅ NO usar withTrashed() en belongsToMany, solo get()
+    $esInvitado = $reunion->invitados()->where('user_id', $user->id)->exists();
+    
+    if (!$esOrganizador && !$esInvitado) {
+        abort(403, 'No tienes permiso para ver esta reunión.');
     }
+
+    // ✅ Para invitados, simplemente usar get() 
+    // (la tabla pivote no tiene soft deletes)
+    $invitados = $reunion->invitados()->get();
+
+    // Cargar actividades que no han sido soft deleted
+    $reunion->load(['actividades' => function ($query) {
+        $query->whereNull('deleted_at');
+    }]);
+
+    return view('reuniones.detail_history', compact('reunion', 'invitados'));
+}
 
     //Actividades de una reunión
     public function storeActividad(Request $request, Reunion $reunion)
