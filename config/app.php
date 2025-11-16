@@ -20,7 +20,7 @@ return [
 
     'faker_locale' => env('APP_FAKER_LOCALE', 'en_US'),
 
-    'key' => trim(env('APP_KEY'), '"'),
+    'key' => env('APP_KEY') ? trim(env('APP_KEY'), '"\'') : null,
 
     'cipher' => 'AES-256-CBC',
 
