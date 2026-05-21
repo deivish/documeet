@@ -47,8 +47,8 @@
         </div>
     </div>
 
-    {{-- Cards de acciones principales --}}
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+    {{-- Cards de acciones principales — 4 tarjetas iguales --}}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         
         {{-- Card: Tus Reuniones --}}
         <div class="group bg-white rounded-2xl shadow-sm border border-gray-200 hover:shadow-xl transition-all duration-300 overflow-hidden">
@@ -121,6 +121,30 @@
                 </a>
             </div>
         </div>
+
+        {{-- Card: Análisis General --}}
+        <div class="group bg-white rounded-2xl shadow-sm border border-gray-200 hover:shadow-xl transition-all duration-300 overflow-hidden">
+            <div class="bg-gradient-to-br from-indigo-500 to-purple-600 p-6 text-white">
+                <div class="w-14 h-14 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center mb-4">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                    </svg>
+                </div>
+                <h2 class="text-xl font-bold mb-2">Análisis General</h2>
+                <p class="text-indigo-100 text-sm">Estadísticas, métricas y visualización de datos</p>
+            </div>
+            <div class="p-6">
+                <a href="{{ route('analytics.index') }}"
+                   class="w-full inline-flex items-center justify-center px-5 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg font-medium group">
+                    Ver Análisis
+                    <svg class="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+
     </div>
 
     {{-- Sección de acceso rápido --}}

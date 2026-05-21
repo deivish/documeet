@@ -19,7 +19,8 @@ class Reunion extends Model
         'user_id',
         'daily_url',           // ← AGREGADO para Daily.co
         'daily_room_name',     // ← AGREGADO para Daily.co
-        'daily_expires_at'     // ← AGREGADO para Daily.co
+        'daily_expires_at',     // ← AGREGADO para Daily.co
+        'reunion_padre_id'
     ];
 
     protected $casts = [
@@ -72,6 +73,21 @@ class Reunion extends Model
     public function compromisos() 
     {
         return $this->hasMany(Compromiso::class);
+    }
+
+    public function reunionPadre()
+    {
+        return $this->belongsTo(Reunion::class, 'reunion_padre_id');
+    }
+
+    public function reunionesHijas()
+    {
+        return $this->hasMany(Reunion::class, 'reunion_padre_id');
+    }
+
+    public function auditoria()
+    {
+        return $this->hasMany(Auditoria::class);
     }
 
     // ← AGREGADO para asistencias (si las usas)

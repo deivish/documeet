@@ -13,7 +13,11 @@ class Actividad extends Model
 
     protected $table = 'actividades';
 
-    protected $fillable = ['reunion_id', 'nombre', 'descripcion', 'responsable', 'fecha_entrega'];
+    protected $fillable = ['reunion_id', 'nombre', 'descripcion', 'responsable', 'fecha_entrega', 'estado'];
+
+    protected $casts = [
+    'fecha_entrega' => 'date',
+    ];
 
     public function reunion()
     {

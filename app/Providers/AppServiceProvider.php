@@ -3,26 +3,33 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\Broadcast;
+use Pusher\Pusher;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
     public function register(): void
     {
         //
     }
 
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
-        //
-        Broadcast::routes();
+        // Configurar Pusher con SSL desactivado para desarrollo local en Windows
+        $this->app->singleton('pusher', function ($app) {
+            $config = config('broadcasting.connections.pusher');
 
-        require base_path('routes/channels.php');
+            $guzzleClient = new \GuzzleHttp\Client([
+                'verify' => false,  // ← desactiva verificación SSL
+            ]);
+
+            return new Pusher(
+                $config['key'],
+                $config['secret'],
+                $config['app_id'],
+                array_merge($config['options'], [
+                    'http_client' => $guzzleClient,
+                ])
+            );
+        });
     }
 }

@@ -183,7 +183,7 @@
                                    class="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
                             <span class="ml-2 text-sm text-gray-600">Recuérdame</span>
                         </label>
-                        <a href="#" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium transition">
+                        <a href="{{ route('password.request') }}" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium transition">
                             ¿Olvidaste tu contraseña?
                         </a>
                     </div>

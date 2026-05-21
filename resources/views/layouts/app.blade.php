@@ -66,10 +66,9 @@
                         </a>
 
                         {{-- Notificaciones --}}
-                        <div class="relative">
-                            <button id="notification-bell" type="button"
+                        <div class="relative" x-data="{ abierto: false }">
+                            <button @click="abierto = !abierto" type="button"
                                 class="relative text-gray-600 hover:text-indigo-600 focus:outline-none cursor-pointer transition-colors">
-                                {{-- Ícono de campana SVG --}}
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
@@ -80,16 +79,17 @@
                                     $unreadCount = auth()->user()->unreadNotifications->count();
                                 @endphp
 
-                                {{-- Badge de contador --}}
                                 <span id="notification-count"
                                     class="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center {{ $unreadCount == 0 ? 'hidden' : '' }}">
                                     {{ $unreadCount }}
                                 </span>
                             </button>
 
-                            {{-- Dropdown de notificaciones --}}
-                            <div id="notification-dropdown"
-                                class="hidden absolute right-0 mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-xl z-50">
+                            {{-- Dropdown de notificaciones controlado por Alpine --}}
+                            <div x-show="abierto" @click.away="abierto = false" x-transition
+                                id="notification-dropdown"
+                                class="absolute right-0 mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-xl z-50"
+                                style="display:none;">
 
                                 {{-- Header del dropdown --}}
                                 <div
@@ -137,22 +137,20 @@
                                                             {{ $notification->data['titulo'] }}
                                                         </p>
                                                         <p class="text-xs text-gray-500 flex items-center gap-1">
-    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
-        </path>
-    </svg>
-    @php
-        try {
-            // Intenta parsear la fecha en formato ISO
-            $fechaHora = \Carbon\Carbon::parse($notification->data['fecha_hora']);
-            echo $fechaHora->format('d/m/Y H:i');
-        } catch (\Exception $e) {
-            // Si falla, muestra la fecha tal cual está guardada
-            echo $notification->data['fecha_hora'] ?? 'Fecha no disponible';
-        }
-    @endphp
-</p>
+                                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
+                                                                </path>
+                                                            </svg>
+                                                            @php
+                                                                try {
+                                                                    $fechaHora = \Carbon\Carbon::parse($notification->data['fecha_hora']);
+                                                                    echo $fechaHora->format('d/m/Y H:i');
+                                                                } catch (\Exception $e) {
+                                                                    echo $notification->data['fecha_hora'] ?? 'Fecha no disponible';
+                                                                }
+                                                            @endphp
+                                                        </p>
                                                         @if (isset($notification->data['organizador']))
                                                             <p class="text-xs text-gray-400 mt-1">
                                                                 Por: {{ $notification->data['organizador'] }}
@@ -449,6 +447,117 @@
     {{-- Alpine.js --}}
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 
+    {{-- ══════════════════════════════════════════════════
+         PUSHER — Notificaciones en tiempo real
+         Solo se activa si el usuario está autenticado
+    ══════════════════════════════════════════════════ --}}
+    @auth
+    <script>
+    setTimeout(function () {
+
+        // ── Menú móvil ──
+        const mobileBtn  = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        if (mobileBtn && mobileMenu) {
+            mobileBtn.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
+        }
+
+        // ── Pusher: escuchar canal privado del usuario ──
+        const userId = document.querySelector('meta[name="user-id"]')?.content;
+        if (!userId || typeof window.Echo === 'undefined') return;
+
+        window.Echo.private('App.Models.User.' + userId)
+            .notification(function (notification) {
+                actualizarContadorCampana();
+                agregarNotificacionDropdown(notification);
+                mostrarToast(notification);
+            });
+
+    }, 300);
+
+    function actualizarContadorCampana() {
+        const badge = document.getElementById('notification-count');
+        if (!badge) return;
+        const actual = parseInt(badge.textContent || '0');
+        badge.textContent = actual + 1;
+        badge.classList.remove('hidden');
+    }
+
+    function agregarNotificacionDropdown(data) {
+        const lista = document.getElementById('notification-list');
+        if (!lista) return;
+
+        // Quitar el estado vacío si existe
+        const vacio = lista.querySelector('.text-center');
+        if (vacio) vacio.closest('li')?.remove();
+
+        const li = document.createElement('li');
+        li.className = 'hover:bg-gray-50 transition-colors';
+        li.innerHTML = `
+            <a href="/reuniones/${data.reunion_id || ''}" class="block p-4">
+                <div class="flex items-start gap-3">
+                    <div class="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-semibold text-gray-800">${data.titulo || 'Nueva reunión'}</p>
+                        <p class="text-xs text-gray-500 mt-0.5">${data.mensaje || 'Te han invitado a una reunión'}</p>
+                        ${data.organizador ? `<p class="text-xs text-gray-400 mt-0.5">Por: ${data.organizador}</p>` : ''}
+                    </div>
+                    <span class="w-2 h-2 bg-indigo-600 rounded-full flex-shrink-0 mt-1"></span>
+                </div>
+            </a>
+        `;
+        lista.prepend(li);
+    }
+
+    function mostrarToast(data) {
+        const toast = document.createElement('div');
+        toast.className = [
+            'fixed top-20 right-4 z-[999] max-w-sm w-full',
+            'bg-white border border-indigo-200 rounded-2xl shadow-2xl',
+            'p-4 flex items-start gap-3',
+            'transition-all duration-300 translate-x-full opacity-0'
+        ].join(' ');
+
+        toast.innerHTML = `
+            <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-sm font-bold text-gray-800">📅 Nueva invitación</p>
+                <p class="text-xs text-gray-600 mt-0.5">${data.mensaje || data.titulo || 'Te han invitado a una reunión'}</p>
+                ${data.reunion_id
+                    ? `<a href="/reuniones/${data.reunion_id}" class="text-xs text-indigo-600 font-semibold mt-1.5 block hover:underline">Ver reunión →</a>`
+                    : ''}
+            </div>
+            <button onclick="this.parentElement.remove()" class="text-gray-400 hover:text-gray-600 flex-shrink-0 ml-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        `;
+
+        document.body.appendChild(toast);
+
+        requestAnimationFrame(() => {
+            toast.classList.remove('translate-x-full', 'opacity-0');
+            toast.classList.add('translate-x-0', 'opacity-100');
+        });
+
+        setTimeout(() => {
+            toast.classList.add('translate-x-full', 'opacity-0');
+            setTimeout(() => toast.remove(), 300);
+        }, 6000);
+    }
+    </script>
+    @endauth
 
 </body>
 

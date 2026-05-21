@@ -140,7 +140,7 @@
 
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <input type="date" name="actividades[{{ $actividadIndex }}][fecha_entrega]"
-                                        value="{{ $actividad->fecha_entrega }}"
+                                        value="{{ \Carbon\Carbon::parse($actividad->fecha_entrega)->format('Y-m-d') }}"
                                         class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                                         required>
 
@@ -201,6 +201,40 @@
                     Añadir Actividad
                 </button>
             </div>
+
+            {{-- Sección: Vinculación con reunión anterior (opcional) --}}
+            <div class="px-8 py-6 border-t border-gray-200">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold text-gray-800">Seguimiento de reunión anterior</h3>
+                        <p class="text-sm text-gray-500">Opcional — vincula esta reunión con una anterior para hacer seguimiento de compromisos pendientes</p>
+                    </div>
+                </div>
+            
+                <div class="max-w-lg">
+                    <label for="reunion_padre_id" class="block text-sm font-semibold text-gray-700 mb-2">
+                        ¿Esta reunión da seguimiento a una reunión anterior?
+                    </label>
+                    <select name="reunion_padre_id" id="reunion_padre_id"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition text-sm">
+                        <option value="">— No, es una reunión independiente —</option>
+                        @foreach($reunionesAnteriores as $r)
+                            <option value="{{ $r->id }}"
+                                {{ (isset($reunion) && $reunion->reunion_padre_id == $r->id) ? 'selected' : '' }}>
+                                {{ $r->titulo }} · {{ \Carbon\Carbon::parse($r->fecha_hora)->format('d/m/Y') }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <p class="mt-2 text-xs text-gray-400">Si seleccionas una reunión anterior, podrás ver sus compromisos pendientes en el dashboard.</p>
+                </div>
+            </div>
+ 
 
             {{-- Footer con botones --}}
             <div class="bg-gray-50 px-8 py-6 border-t border-gray-200 flex flex-col sm:flex-row gap-4 justify-end">
