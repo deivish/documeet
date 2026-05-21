@@ -21,4 +21,5 @@ return new class extends Migration
             $table->dropColumn(['daily_url', 'daily_room_name', 'daily_expires_at']);
         });
     }
+    // v2
 };
