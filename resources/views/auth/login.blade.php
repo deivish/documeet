@@ -20,7 +20,7 @@
                         </svg>
                     </div>
                     <h1 class="text-4xl font-bold mb-4">¡Bienvenido de vuelta!</h1>
-                    <p class="text-xl text-indigo-100">Accede a tus reuniones y gestiona tu equipo</p>
+                    <p class="text-xl text-indigo-100">Gestiona tus reuniones con inteligencia artificial</p>
                 </div>
 
                 <div class="space-y-4">
@@ -32,7 +32,7 @@
                         </div>
                         <div>
                             <h3 class="font-semibold mb-1">Videollamadas HD</h3>
-                            <p class="text-sm text-indigo-100">Reuniones de alta calidad con tu equipo</p>
+                            <p class="text-sm text-indigo-100">Reuniones en tiempo real con tu equipo de trabajo</p>
                         </div>
                     </div>
 
@@ -44,7 +44,7 @@
                         </div>
                         <div>
                             <h3 class="font-semibold mb-1">Transcripción Automática</h3>
-                            <p class="text-sm text-indigo-100">IA convierte audio en texto en tiempo real</p>
+                            <p class="text-sm text-indigo-100">La IA convierte el audio de la reunión en texto automáticamente</p>
                         </div>
                     </div>
 
@@ -55,8 +55,20 @@
                             </svg>
                         </div>
                         <div>
-                            <h3 class="font-semibold mb-1">Actas con IA</h3>
-                            <p class="text-sm text-indigo-100">Genera resúmenes automáticamente</p>
+                            <h3 class="font-semibold mb-1">Actas Generadas con IA</h3>
+                            <p class="text-sm text-indigo-100">Claude AI genera el acta con actividades, compromisos y resumen ejecutivo</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-4">
+                        <div class="w-10 h-10 bg-white/20 backdrop-blur rounded-lg flex items-center justify-center flex-shrink-0">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold mb-1">Dashboard Analítico</h3>
+                            <p class="text-sm text-indigo-100">Visualiza métricas, seguimiento de compromisos y auditoría de tus reuniones</p>
                         </div>
                     </div>
                 </div>

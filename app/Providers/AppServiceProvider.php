@@ -14,12 +14,17 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Forzar HTTPS en producción
+        if (env('APP_ENV') === 'production') {
+            \Illuminate\Support\Facades\URL::forceScheme('https');
+        }
+
         // Configurar Pusher con SSL desactivado para desarrollo local en Windows
         $this->app->singleton('pusher', function ($app) {
             $config = config('broadcasting.connections.pusher');
 
             $guzzleClient = new \GuzzleHttp\Client([
-                'verify' => false,  // ← desactiva verificación SSL
+                'verify' => false,
             ]);
 
             return new Pusher(
