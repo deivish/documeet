@@ -289,9 +289,9 @@ class ReunionController extends Controller
 
         try {
             $usuario->notify(new InvitacionReunion($reunion));
-            // broadcast(new InvitacionReunion($reunion, $usuario->id))->toOthers();
+            \Log::info('✅ Notificación encolada para: ' . $usuario->email);
         } catch (\Exception $e) {
-            \Log::warning('Notificación no enviada: ' . $e->getMessage());
+            \Log::error('❌ Error notificación: ' . $e->getMessage());
         }
 
         return back()->with('success', 'Invitado agregado correctamente.');
