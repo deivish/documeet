@@ -136,13 +136,24 @@ class DashboardController extends Controller
             'colors' => ['#10b981', '#f59e0b', '#ef4444'],
         ];
 
-        // Compromisos por responsable (barras)
-        $chartResponsables = [
-            'labels'    => $compromisosPorResponsable->keys()->toArray(),
-            'cumplidos' => $compromisosPorResponsable->pluck('cumplidos')->toArray(),
-            'pendientes'=> $compromisosPorResponsable->pluck('pendientes')->toArray(),
-            'vencidos'  => $compromisosPorResponsable->pluck('vencidos')->toArray(),
-        ];
+        // Compromisos por vencimiento (barras por rango)
+$hoy = now()->startOfDay();
+$chartVencimientos = [
+    'labels' => ['Vencidos', 'Esta semana', 'Próx. semana', 'Este mes', 'Más adelante'],
+    'data'   => [
+        $compromisos->where('estado', '!=', 'cumplido')
+            ->filter(fn($c) => \Carbon\Carbon::parse($c->fecha)->isPast())->count(),
+        $compromisos->where('estado', '!=', 'cumplido')
+            ->filter(fn($c) => \Carbon\Carbon::parse($c->fecha)->between($hoy, $hoy->copy()->endOfWeek()))->count(),
+        $compromisos->where('estado', '!=', 'cumplido')
+            ->filter(fn($c) => \Carbon\Carbon::parse($c->fecha)->between($hoy->copy()->next('Monday'), $hoy->copy()->next('Monday')->endOfWeek()))->count(),
+        $compromisos->where('estado', '!=', 'cumplido')
+            ->filter(fn($c) => \Carbon\Carbon::parse($c->fecha)->between($hoy, $hoy->copy()->endOfMonth()))->count(),
+        $compromisos->where('estado', '!=', 'cumplido')
+            ->filter(fn($c) => \Carbon\Carbon::parse($c->fecha)->isAfter($hoy->copy()->endOfMonth()))->count(),
+    ],
+    'colors' => ['#ef4444', '#f97316', '#f59e0b', '#3b82f6', '#10b981'],
+];
 
         return view('reuniones.dashboard', compact(
             'reunion',
@@ -161,7 +172,7 @@ class DashboardController extends Controller
             // Score
             'scoreGeneral',
             // Charts
-            'chartActividades', 'chartCompromisos', 'chartResponsables'
+            'chartActividades', 'chartCompromisos', 'chartVencimientos'
         ));
     }
 
