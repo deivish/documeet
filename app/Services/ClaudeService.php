@@ -13,7 +13,7 @@ class ClaudeService
     public function __construct()
     {
         $this->client = new Client([
-            'timeout' => 60,
+            'timeout' => 120,
             'verify'  => false
         ]);
         $this->apiKey = env('CLAUDE_API_KEY');
@@ -62,7 +62,7 @@ class ClaudeService
 
             $this->validarApiKey();
 
-            $transcripcionCorta = $this->truncarTranscripcion($transcripcion, 14000);
+            $transcripcionCorta = $this->truncarTranscripcion($transcripcion, 10000);
             $fechaHoy           = now()->format('d/m/Y');
 
             $prompt = <<<PROMPT
@@ -106,7 +106,7 @@ $transcripcionCorta
 Redacta el acta ahora:
 PROMPT;
 
-            $texto = $this->llamarClaude($prompt, 4096, 0.4);
+            $texto = $this->llamarClaude($prompt, 8096, 0.4);
 
             Log::info('✅ Resumen ejecutivo generado');
 
@@ -131,7 +131,7 @@ PROMPT;
 
             $this->validarApiKey();
 
-            $transcripcionCorta = $this->truncarTranscripcion($transcripcion, 14000);
+            $transcripcionCorta = $this->truncarTranscripcion($transcripcion, 10000);
             $fechaHoy           = now()->format('Y-m-d');
 
             $titulo      = $datosReunion['titulo']      ?? 'Reunión';
@@ -185,7 +185,7 @@ Transcripción:
 $transcripcionCorta
 PROMPT;
 
-            $texto = $this->llamarClaude($prompt, 4096, 0.3);
+            $texto = $this->llamarClaude($prompt, 8096, 0.4);
 
             // Parsear el JSON
             $texto  = str_replace(['```json', '```', '`'], '', $texto);
@@ -223,7 +223,7 @@ PROMPT;
                 'content-type'      => 'application/json'
             ],
             'json' => [
-                'model'       => 'claude-haiku-4-5-20251001',
+                'model' => 'claude-sonnet-4-20250514',
                 'max_tokens'  => $maxTokens,
                 'temperature' => $temperature,
                 'messages'    => [
