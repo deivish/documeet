@@ -13,7 +13,7 @@ class ClaudeService
     public function __construct()
     {
         $this->client = new Client([
-            'timeout' => 120,
+            'timeout' => 180,
             'verify'  => false
         ]);
         $this->apiKey = env('CLAUDE_API_KEY');
@@ -66,7 +66,7 @@ class ClaudeService
             $fechaHoy           = now()->format('d/m/Y');
 
             $prompt = <<<PROMPT
-Eres un asistente experto en documentación de reuniones. Tu tarea es leer la transcripción completa y redactar el contenido del acta como si fuera un documento oficial de la reunión, no un resumen.
+Eres un asistente experto en documentación de reuniones. IMPORTANTE: Responde ÚNICAMENTE con texto plano. PROHIBIDO usar markdown, hashtags (#), asteriscos (**), guiones como bullets (-) o cualquier símbolo de formato. Los títulos de sección escríbelos en MAYÚSCULAS seguidos de dos puntos.
 
 El acta debe reflejar TODO lo que fue relevante en la reunión, organizado y limpio, como si un secretario profesional hubiera tomado nota de cada punto importante. La persona que lo lea debe quedar completamente informada de lo que se habló sin necesidad de escuchar la grabación.
 
@@ -272,7 +272,7 @@ Reglas:
 Transcripción:
 $transcripcion
 
-IMPORTANTE: Responde ÚNICAMENTE con el array JSON.
+IMPORTANTE: No uses markdown. No uses #, ##, ###, **, *, ni ningún símbolo de formato. Solo texto plano con los títulos en mayúsculas.
 PROMPT;
     }
 
