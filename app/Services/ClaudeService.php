@@ -66,40 +66,40 @@ class ClaudeService
             $fechaHoy           = now()->format('d/m/Y');
 
             $prompt = <<<PROMPT
-Eres un asistente experto en redacción de actas corporativas. Analiza la siguiente transcripción de una reunión y genera un resumen ejecutivo profesional.
+Eres un asistente experto en documentación corporativa. Tu tarea es leer la transcripción de una reunión y redactar un resumen ejecutivo claro, útil y bien organizado, como si se lo fueras a contar a alguien que no estuvo presente y necesita entender exactamente qué pasó.
 
-El resumen SIEMPRE debe tener estas secciones, aunque la reunión haya sido corta o informal:
+El resumen debe tener estas secciones, redactadas en párrafos fluidos sin listas innecesarias:
 
 **RESUMEN EJECUTIVO**
 
-**Contexto general:**
-Describe brevemente de qué trató la reunión, cuál fue su propósito y el ambiente general de la conversación. (2-3 oraciones)
+**¿De qué trató la reunión?**
+Explica en 2 o 3 oraciones el propósito de la reunión y el contexto general. Sin mencionar trivialidades ni saludos.
 
-**Temas principales tratados:**
-Lista los temas más importantes que se discutieron durante la reunión. Si no se discutieron temas formales, describe las conversaciones o intercambios relevantes.
+**Temas importantes discutidos**
+Describe los temas relevantes que se trataron. Si se tomaron decisiones o se llegó a acuerdos sobre algún tema, menciónalos aquí con claridad. Omite conversaciones de relleno, chistes o comentarios sin relevancia.
 
-**Decisiones tomadas:**
-Enumera las decisiones o acuerdos concretos que surgieron. Si no hubo decisiones formales, indica que la reunión fue de carácter informativo o exploratorio.
+**Decisiones tomadas**
+Lista las decisiones concretas que surgieron de la reunión. Si no hubo decisiones formales, indica que la reunión fue principalmente informativa o de seguimiento.
 
-**Compromisos y próximos pasos:**
-Describe las acciones, tareas o compromisos mencionados. Si no se mencionaron explícitamente, indica los temas que quedaron pendientes de definir.
+**Compromisos y responsables**
+Menciona cada compromiso que se asumió durante la reunión, indicando quién es responsable y para cuándo. Si no se mencionaron fechas, indícalo.
 
-**Observaciones adicionales:**
-Cualquier punto relevante que no encaje en las secciones anteriores, como inquietudes expresadas, sugerencias o temas para futuras reuniones.
-
-Fecha de la reunión: $fechaHoy
+**Puntos pendientes o para próxima reunión**
+Temas que quedaron sin resolver o que se deben retomar en una siguiente sesión.
 
 Reglas importantes:
-- Redacta en español, tono formal y profesional
-- Nunca dejes una sección vacía — si no hay información, escribe una oración indicando que no aplica o que fue informativa
-- El resumen debe ser útil aunque la reunión haya sido breve o sin compromisos formales
-- Máximo 400 palabras en total
-- No incluyas el JSON de compromisos aquí, solo el resumen narrativo
+- Redacta en español formal pero natural, como lo haría un profesional
+- No repitas información entre secciones
+- Si una sección no aplica, escribe una oración breve indicando que no hubo información al respecto
+- Máximo 500 palabras en total
+- No incluyas el JSON de compromisos aquí
+
+Fecha de la reunión: $fechaHoy
 
 Transcripción:
 $transcripcionCorta
 
-Genera el resumen ahora:
+Redacta el resumen ahora:
 PROMPT;
 
             $texto = $this->llamarClaude($prompt, 2048, 0.4);
@@ -287,7 +287,9 @@ PROMPT;
                 return array_map(fn($c) => [
                     'descripcion' => $c['descripcion'] ?? 'Sin descripción',
                     'responsable' => $c['responsable'] ?? 'Sin asignar',
-                    'fecha'       => $c['fecha']       ?? now()->addWeek()->format('Y-m-d'),
+                    'fecha' => (!empty($c['fecha']) && $c['fecha'] !== 'Sin especificar' && $c['fecha'] !== 'sin especificar') 
+                        ? $c['fecha'] 
+                        : now()->addWeek()->format('Y-m-d'),
                     'resultado'   => $c['resultado']   ?? 'Completar tarea'
                 ], $compromisos);
             }
