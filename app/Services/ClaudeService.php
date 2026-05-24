@@ -66,44 +66,41 @@ class ClaudeService
             $fechaHoy           = now()->format('d/m/Y');
 
             $prompt = <<<PROMPT
-Eres un asistente experto en documentación de reuniones. IMPORTANTE: Responde ÚNICAMENTE con texto plano. PROHIBIDO usar markdown, hashtags (#), asteriscos (**), guiones como bullets (-) o cualquier símbolo de formato. Los títulos de sección escríbelos en MAYÚSCULAS seguidos de dos puntos.
+Eres un secretario corporativo experto en redacción de actas de reuniones. Redacta el acta de la siguiente reunión en formato ejecutivo y profesional.
 
-El acta debe reflejar TODO lo que fue relevante en la reunión, organizado y limpio, como si un secretario profesional hubiera tomado nota de cada punto importante. La persona que lo lea debe quedar completamente informada de lo que se habló sin necesidad de escuchar la grabación.
+INSTRUCCIONES DE FORMATO:
+- Tono formal y directo, sin narración
+- Oraciones cortas y precisas
+- Sin frases como "se procedió a", "se llevó a cabo", "se abordó el tema de"
+- Los hechos se enuncian directamente: "El estudiante informó...", "La profesora indicó...", "Se acordó..."
+- Sin markdown, sin #, sin **, sin guiones como viñetas
 
-Usa esta estructura:
+ESTRUCTURA DEL ACTA:
 
-**DESARROLLO DE LA REUNIÓN**
+OBJETO DE LA REUNIÓN
+Una oración que describe el propósito central del encuentro.
 
-**Apertura y contexto**
-Describe brevemente cómo inició la reunión, quiénes participaron y cuál era el objetivo del encuentro.
+PARTICIPANTES
+Lista los participantes con su rol.
 
-**Temas tratados**
-Por cada tema relevante que se discutió, redacta un párrafo explicando qué se dijo, qué se analizó y a qué conclusión se llegó. No uses listas con bullets, usa párrafos fluidos. Omite saludos, conversaciones de relleno, problemas técnicos y cualquier intercambio sin relevancia para el proyecto.
+TEMAS DISCUTIDOS
+Por cada tema relevante, un párrafo breve y directo. Solo lo sustancial. Sin relleno.
 
-**Decisiones y acuerdos**
-Describe cada decisión o acuerdo al que llegaron los participantes, con el contexto suficiente para entender por qué se tomó esa decisión.
+DECISIONES ADOPTADAS
+Cada decisión en una oración clara. Si no hubo decisiones formales, escribe: Sin decisiones formales registradas.
 
-**Compromisos asumidos**
-Por cada compromiso mencionado indica quién se comprometió, qué va a hacer y para cuándo. Si no se mencionó fecha, indica que queda pendiente de definir.
+COMPROMISOS Y RESPONSABLES
+Por cada compromiso: quién, qué, para cuándo. Formato: Nombre — Descripción del compromiso — Fecha límite.
 
-**Cierre**
-Cómo terminó la reunión, si se acordó una próxima reunión y cualquier observación final relevante.
-
-Reglas críticas:
-- Redacta en español formal y natural
-- Usa párrafos, no listas con guiones ni bullets
-- NO repitas información entre secciones
-- Incluye TODO lo importante aunque parezca mucho texto — más es mejor que menos
-- Elimina ÚNICAMENTE: saludos, despedidas, problemas técnicos de audio/video, conversaciones irrelevantes y ruido
-- Si la transcripción es larga, el acta también puede serlo — no la recortes artificialmente
-- No pongas títulos con asteriscos dobles, usa títulos simples
+PRÓXIMOS PASOS
+Acciones inmediatas o próxima reunión si fue mencionada.
 
 Fecha de la reunión: $fechaHoy
 
-Transcripción completa:
+Transcripción:
 $transcripcionCorta
 
-Redacta el acta ahora:
+Redacta el acta:
 PROMPT;
 
             $texto = $this->llamarClaude($prompt, 8096, 0.4);
