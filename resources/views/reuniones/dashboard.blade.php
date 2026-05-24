@@ -189,20 +189,27 @@
             @endif
         </div>
 
-        {{-- Barras por responsable --}}
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-            <h3 class="text-base font-bold text-gray-800 mb-4 flex items-center gap-2">
-                <span class="w-3 h-3 bg-indigo-500 rounded-full"></span>
-                Compromisos por Responsable
-            </h3>
-            @if($compromisosPorResponsable->count() > 0)
-                <div class="relative h-48">
-                    <canvas id="chartResponsables"></canvas>
-                </div>
-            @else
-                <div class="h-48 flex items-center justify-center text-gray-400 text-sm">Sin datos de responsables</div>
-            @endif
+        {{-- Barras por vencimiento --}}
+<div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+    <h3 class="text-base font-bold text-gray-800 mb-4 flex items-center gap-2">
+        <span class="w-3 h-3 bg-orange-500 rounded-full"></span>
+        Compromisos por Vencimiento
+    </h3>
+    @if($totalCompromisos > 0)
+        <div class="relative h-48">
+            <canvas id="chartVencimientos"></canvas>
         </div>
+        <div class="mt-4 grid grid-cols-2 gap-1 text-xs">
+            <div class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-red-500"></span> Vencidos</div>
+            <div class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-orange-500"></span> Esta semana</div>
+            <div class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-yellow-500"></span> Próx. semana</div>
+            <div class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-blue-500"></span> Este mes</div>
+            <div class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-green-500"></span> Más adelante</div>
+        </div>
+    @else
+        <div class="h-48 flex items-center justify-center text-gray-400 text-sm">Sin compromisos registrados</div>
+    @endif
+</div>
 
     </div>
 
@@ -398,41 +405,27 @@ new Chart(document.getElementById('chartCompromisos'), {
 });
 @endif
 
-// ── Barras por Responsable ──
-@if($compromisosPorResponsable->count() > 0)
-new Chart(document.getElementById('chartResponsables'), {
+// ── Barras por Vencimiento ──
+@if($totalCompromisos > 0)
+new Chart(document.getElementById('chartVencimientos'), {
     type: 'bar',
     data: {
-        labels: {!! json_encode($chartResponsables['labels']) !!},
-        datasets: [
-            {
-                label: 'Cumplidos',
-                data: {!! json_encode($chartResponsables['cumplidos']) !!},
-                backgroundColor: '#10b981',
-                borderRadius: 4,
-            },
-            {
-                label: 'Pendientes',
-                data: {!! json_encode($chartResponsables['pendientes']) !!},
-                backgroundColor: '#f59e0b',
-                borderRadius: 4,
-            },
-            {
-                label: 'Vencidos',
-                data: {!! json_encode($chartResponsables['vencidos']) !!},
-                backgroundColor: '#ef4444',
-                borderRadius: 4,
-            }
-        ]
+        labels: {!! json_encode($chartVencimientos['labels']) !!},
+        datasets: [{
+            data: {!! json_encode($chartVencimientos['data']) !!},
+            backgroundColor: {!! json_encode($chartVencimientos['colors']) !!},
+            borderRadius: 6,
+            borderWidth: 0,
+        }]
     },
     options: {
         ...chartDefaults,
         plugins: {
-            legend: { display: true, position: 'bottom', labels: { font: { size: 10 }, padding: 8 } }
+            legend: { display: false }
         },
         scales: {
-            x: { stacked: false, grid: { display: false }, ticks: { font: { size: 10 } } },
-            y: { stacked: false, beginAtZero: true, ticks: { stepSize: 1, font: { size: 10 } } }
+            x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+            y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 10 } } }
         }
     }
 });

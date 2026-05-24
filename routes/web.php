@@ -59,6 +59,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/reuniones/{reunion}/invitados', [ReunionController::class, 'invitados'])->name('reuniones.invitados');
     Route::post('/reuniones/{reunion}/invitados', [ReunionController::class, 'agregarInvitado'])->name('reuniones.agregarInvitado');
     Route::get('/reuniones/invitaciones', [ReunionController::class, 'invitaciones'])->name('reuniones.invitaciones');
+    Route::delete('/reuniones/{reunion}/invitados/{usuario}', [ReunionController::class, 'eliminarInvitado'])->name('reuniones.eliminarInvitado');
 
     // ── Videollamada ──
     Route::get('/reuniones/{reunion}/videollamada', [VideoCallController::class, 'join'])->name('reuniones.videollamada');

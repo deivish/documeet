@@ -375,4 +375,34 @@ class ReunionController extends Controller
 
         return redirect()->route('reuniones.show', $reunion)->with('success', 'Actividad registrada correctamente.');
     }
+
+    public function eliminarInvitado(Reunion $reunion, User $usuario)
+{
+    if ($reunion->user_id !== Auth::id()) {
+        abort(403, 'Solo el moderador puede eliminar invitados.');
+    }
+
+    if ($usuario->id === $reunion->user_id) {
+        return back()->withErrors(['email' => 'No puedes eliminar al organizador de la reunión.']);
+    }
+
+    // Eliminar notificaciones relacionadas
+    $usuario->notifications()
+        ->where('data->reunion_id', $reunion->id)
+        ->delete();
+
+    // Eliminar de la tabla pivot
+    $reunion->invitados()->detach($usuario->id);
+
+    AuditoriaHelper::registrar(
+        'Eliminó invitado: ' . $usuario->name,
+        'Reunion',
+        $reunion->id,
+        $reunion->id,
+        ['invitado' => $usuario->name],
+        null
+    );
+
+    return back()->with('success', 'Invitado eliminado correctamente.');
+}
 }
