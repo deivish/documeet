@@ -506,95 +506,124 @@ class ActaController extends Controller
     // DESCARGAR DOCX (dinámico)
     // ══════════════════════════════════════════════════════════════
 
-    public function descargarDocx(Acta $acta)
+public function descargarDocx(Acta $acta)
     {
-        $acta->load(['reunion.actividades', 'reunion.compromisos', 'reunion.user', 'reunion.invitados']);
+        try {
+            $acta->load(['reunion.actividades', 'reunion.compromisos', 'reunion.user', 'reunion.invitados']);
 
-        $phpWord = new PhpWord();
-        $phpWord->setDefaultFontName('Arial');
-        $phpWord->setDefaultFontSize(11);
+            $phpWord = new PhpWord();
+            $phpWord->setDefaultFontName('Arial');
+            $phpWord->setDefaultFontSize(11);
 
-        $section = $phpWord->addSection([
-            'marginTop' => 1440, 'marginBottom' => 1440,
-            'marginLeft' => 1800, 'marginRight' => 1440,
-        ]);
+            $section = $phpWord->addSection([
+                'marginTop' => 1440, 'marginBottom' => 1440,
+                'marginLeft' => 1800, 'marginRight' => 1440,
+            ]);
 
-        $reunion    = $acta->reunion;
-        $asistentes = $reunion->invitados
-            ->pluck('name')
-            ->prepend($reunion->user->name . ' (Moderador)')
-            ->toArray();
+            $reunion    = $acta->reunion;
+            $asistentes = $reunion->invitados
+                ->pluck('name')
+                ->prepend($reunion->user->name . ' (Moderador)')
+                ->toArray();
 
-        // Encabezado
-        $section->addText('ACTA DE REUNIÓN', ['bold' => true, 'size' => 16, 'color' => '1F3864'], ['alignment' => 'center', 'spaceAfter' => 200]);
-        $section->addText(strtoupper($reunion->titulo), ['bold' => true, 'size' => 13], ['alignment' => 'center', 'spaceAfter' => 400]);
+            // Encabezado
+            $section->addText('ACTA DE REUNIÓN', ['bold' => true, 'size' => 16, 'color' => '1F3864'], ['alignment' => 'center', 'spaceAfter' => 200]);
+            $section->addText(strtoupper($reunion->titulo), ['bold' => true, 'size' => 13], ['alignment' => 'center', 'spaceAfter' => 400]);
 
-        // Datos
-        $section->addText('INFORMACIÓN', ['bold' => true, 'size' => 12, 'color' => '2E75B6'], ['spaceAfter' => 100]);
-        $section->addText('Fecha: ' . \Carbon\Carbon::parse($reunion->fecha_hora)->format('d/m/Y H:i'));
-        $section->addText('Organizador: ' . ($reunion->user->name ?? 'N/A'));
-        $section->addText('Descripción: ' . ($reunion->descripcion ?? 'Sin descripción'));
-        $section->addTextBreak(1);
-
-        // Asistentes
-        $section->addText('ASISTENTES', ['bold' => true, 'size' => 12, 'color' => '2E75B6'], ['spaceAfter' => 100]);
-        foreach ($asistentes as $a) { $section->addListItem($a); }
-        $section->addTextBreak(1);
-
-        // Resumen
-        if (!empty($acta->resumen)) {
-            $section->addText('RESUMEN EJECUTIVO', ['bold' => true, 'size' => 12, 'color' => '2E75B6'], ['spaceAfter' => 100]);
-            $section->addText($acta->resumen);
+            // Datos
+            $section->addText('INFORMACIÓN', ['bold' => true, 'size' => 12, 'color' => '2E75B6'], ['spaceAfter' => 100]);
+            $section->addText('Fecha: ' . \Carbon\Carbon::parse($reunion->fecha_hora)->format('d/m/Y H:i'));
+            $section->addText('Organizador: ' . ($reunion->user->name ?? 'N/A'));
+            $section->addText('Descripción: ' . ($reunion->descripcion ?? 'Sin descripción'));
             $section->addTextBreak(1);
-        }
 
-        // Desarrollo
-        $section->addText('DESARROLLO', ['bold' => true, 'size' => 12, 'color' => '2E75B6'], ['spaceAfter' => 100]);
-        $section->addText($acta->contenido ?? 'Sin desarrollo registrado.');
-        $section->addTextBreak(1);
-
-        // Actividades
-        $section->addText('ACTIVIDADES', ['bold' => true, 'size' => 12, 'color' => '2E75B6'], ['spaceAfter' => 100]);
-        if ($reunion->actividades->count() > 0) {
-            foreach ($reunion->actividades as $act) {
-                $section->addListItem(
-                    $act->nombre . ' — ' . ($act->responsable ?? 'Sin asignar')
-                    . ' — ' . \Carbon\Carbon::parse($act->fecha_entrega)->format('d/m/Y')
-                    . ' — ' . ucfirst($act->estado ?? 'pendiente')
-                );
+            // Asistentes
+            $section->addText('ASISTENTES', ['bold' => true, 'size' => 12, 'color' => '2E75B6'], ['spaceAfter' => 100]);
+            foreach ($asistentes as $a) {
+                $section->addListItem($a);
             }
-        } else {
-            $section->addText('Sin actividades registradas.', ['italics' => true]);
-        }
-        $section->addTextBreak(1);
+            $section->addTextBreak(1);
 
-        // Compromisos
-        $section->addText('COMPROMISOS', ['bold' => true, 'size' => 12, 'color' => '2E75B6'], ['spaceAfter' => 100]);
-        if ($reunion->compromisos->count() > 0) {
-            foreach ($reunion->compromisos as $comp) {
-                $section->addListItem(
-                    $comp->descripcion . ' — ' . ($comp->responsable ?? 'Sin asignar')
-                    . ' — ' . \Carbon\Carbon::parse($comp->fecha)->format('d/m/Y')
-                    . ' — ' . ucfirst($comp->estado ?? 'pendiente')
-                );
+            // Resumen
+            if (!empty($acta->resumen)) {
+                $section->addText('RESUMEN EJECUTIVO', ['bold' => true, 'size' => 12, 'color' => '2E75B6'], ['spaceAfter' => 100]);
+                foreach (explode("\n", $acta->resumen) as $linea) {
+                    $linea = trim($linea);
+                    if (!empty($linea)) {
+                        $section->addText($linea, ['size' => 11]);
+                    }
+                }
+                $section->addTextBreak(1);
             }
-        } else {
-            $section->addText('Sin compromisos registrados.', ['italics' => true]);
+
+            // Desarrollo
+            $section->addText('DESARROLLO', ['bold' => true, 'size' => 12, 'color' => '2E75B6'], ['spaceAfter' => 100]);
+            $contenido = $acta->contenido ?? 'Sin desarrollo registrado.';
+            foreach (explode("\n", $contenido) as $linea) {
+                $linea = trim($linea);
+                if (!empty($linea)) {
+                    $section->addText($linea, ['size' => 11]);
+                }
+            }
+            $section->addTextBreak(1);
+
+            // Actividades
+            $section->addText('ACTIVIDADES', ['bold' => true, 'size' => 12, 'color' => '2E75B6'], ['spaceAfter' => 100]);
+            if ($reunion->actividades->count() > 0) {
+                foreach ($reunion->actividades as $act) {
+                    $section->addListItem(
+                        $act->nombre . ' — ' . ($act->responsable ?? 'Sin asignar')
+                        . ' — ' . \Carbon\Carbon::parse($act->fecha_entrega)->format('d/m/Y')
+                        . ' — ' . ucfirst($act->estado ?? 'pendiente')
+                    );
+                }
+            } else {
+                $section->addText('Sin actividades registradas.', ['italics' => true]);
+            }
+            $section->addTextBreak(1);
+
+            // Compromisos
+            $section->addText('COMPROMISOS', ['bold' => true, 'size' => 12, 'color' => '2E75B6'], ['spaceAfter' => 100]);
+            if ($reunion->compromisos->count() > 0) {
+                foreach ($reunion->compromisos as $comp) {
+                    $section->addListItem(
+                        $comp->descripcion . ' — ' . ($comp->responsable ?? 'Sin asignar')
+                        . ' — ' . \Carbon\Carbon::parse($comp->fecha)->format('d/m/Y')
+                        . ' — ' . ucfirst($comp->estado ?? 'pendiente')
+                    );
+                }
+            } else {
+                $section->addText('Sin compromisos registrados.', ['italics' => true]);
+            }
+            $section->addTextBreak(1);
+
+            // Cierre
+            $section->addText(
+                'Acta generada por DocuMeet el ' . now()->format('d/m/Y H:i') . '.',
+                ['italics' => true, 'size' => 10, 'color' => '666666']
+            );
+
+            // Generar en directorio temporal y enviar
+            $filename = 'acta-' . $acta->id . '.docx';
+            $tmpPath  = sys_get_temp_dir() . '/' . $filename;
+
+            Log::info('📄 Generando DOCX en: ' . $tmpPath);
+
+            $objWriter = IOFactory::createWriter($phpWord, 'Word2007');
+            $objWriter->save($tmpPath);
+
+            Log::info('✅ DOCX generado, tamaño: ' . filesize($tmpPath) . ' bytes');
+
+            return response()->download($tmpPath, $filename, [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            ])->deleteFileAfterSend(true);
+
+        } catch (\Exception $e) {
+            Log::error('❌ Error DOCX: ' . $e->getMessage() . ' | Archivo: ' . $e->getFile() . ' | Línea: ' . $e->getLine());
+            return response()->json([
+                'error'   => 'Error al generar el documento Word.',
+                'detalle' => $e->getMessage()
+            ], 500);
         }
-        $section->addTextBreak(1);
-
-        // Cierre
-        $section->addText(
-            'Acta generada por DocuMeet el ' . now()->format('d/m/Y H:i') . '.',
-            ['italics' => true, 'size' => 10, 'color' => '666666']
-        );
-
-        // Generar en memoria y enviar directamente sin guardar en disco
-        $filename  = 'acta-' . $acta->id . '.docx';
-        $tmpPath   = tempnam(sys_get_temp_dir(), 'docx_') . '.docx';
-        $objWriter = IOFactory::createWriter($phpWord, 'Word2007');
-        $objWriter->save($tmpPath);
-
-        return response()->download($tmpPath, $filename)->deleteFileAfterSend(true);
     }
 }

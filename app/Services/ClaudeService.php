@@ -62,47 +62,51 @@ class ClaudeService
 
             $this->validarApiKey();
 
-            $transcripcionCorta = $this->truncarTranscripcion($transcripcion, 6000);
+            $transcripcionCorta = $this->truncarTranscripcion($transcripcion, 14000);
             $fechaHoy           = now()->format('d/m/Y');
 
             $prompt = <<<PROMPT
-Eres un asistente experto en documentación corporativa. Tu tarea es leer la transcripción de una reunión y redactar un resumen ejecutivo claro, útil y bien organizado, como si se lo fueras a contar a alguien que no estuvo presente y necesita entender exactamente qué pasó.
+Eres un asistente experto en documentación de reuniones. Tu tarea es leer la transcripción completa y redactar el contenido del acta como si fuera un documento oficial de la reunión, no un resumen.
 
-El resumen debe tener estas secciones, redactadas en párrafos fluidos sin listas innecesarias:
+El acta debe reflejar TODO lo que fue relevante en la reunión, organizado y limpio, como si un secretario profesional hubiera tomado nota de cada punto importante. La persona que lo lea debe quedar completamente informada de lo que se habló sin necesidad de escuchar la grabación.
 
-**RESUMEN EJECUTIVO**
+Usa esta estructura:
 
-**¿De qué trató la reunión?**
-Explica en 2 o 3 oraciones el propósito de la reunión y el contexto general. Sin mencionar trivialidades ni saludos.
+**DESARROLLO DE LA REUNIÓN**
 
-**Temas importantes discutidos**
-Describe los temas relevantes que se trataron. Si se tomaron decisiones o se llegó a acuerdos sobre algún tema, menciónalos aquí con claridad. Omite conversaciones de relleno, chistes o comentarios sin relevancia.
+**Apertura y contexto**
+Describe brevemente cómo inició la reunión, quiénes participaron y cuál era el objetivo del encuentro.
 
-**Decisiones tomadas**
-Lista las decisiones concretas que surgieron de la reunión. Si no hubo decisiones formales, indica que la reunión fue principalmente informativa o de seguimiento.
+**Temas tratados**
+Por cada tema relevante que se discutió, redacta un párrafo explicando qué se dijo, qué se analizó y a qué conclusión se llegó. No uses listas con bullets, usa párrafos fluidos. Omite saludos, conversaciones de relleno, problemas técnicos y cualquier intercambio sin relevancia para el proyecto.
 
-**Compromisos y responsables**
-Menciona cada compromiso que se asumió durante la reunión, indicando quién es responsable y para cuándo. Si no se mencionaron fechas, indícalo.
+**Decisiones y acuerdos**
+Describe cada decisión o acuerdo al que llegaron los participantes, con el contexto suficiente para entender por qué se tomó esa decisión.
 
-**Puntos pendientes o para próxima reunión**
-Temas que quedaron sin resolver o que se deben retomar en una siguiente sesión.
+**Compromisos asumidos**
+Por cada compromiso mencionado indica quién se comprometió, qué va a hacer y para cuándo. Si no se mencionó fecha, indica que queda pendiente de definir.
 
-Reglas importantes:
-- Redacta en español formal pero natural, como lo haría un profesional
-- No repitas información entre secciones
-- Si una sección no aplica, escribe una oración breve indicando que no hubo información al respecto
-- Máximo 500 palabras en total
-- No incluyas el JSON de compromisos aquí
+**Cierre**
+Cómo terminó la reunión, si se acordó una próxima reunión y cualquier observación final relevante.
+
+Reglas críticas:
+- Redacta en español formal y natural
+- Usa párrafos, no listas con guiones ni bullets
+- NO repitas información entre secciones
+- Incluye TODO lo importante aunque parezca mucho texto — más es mejor que menos
+- Elimina ÚNICAMENTE: saludos, despedidas, problemas técnicos de audio/video, conversaciones irrelevantes y ruido
+- Si la transcripción es larga, el acta también puede serlo — no la recortes artificialmente
+- No pongas títulos con asteriscos dobles, usa títulos simples
 
 Fecha de la reunión: $fechaHoy
 
-Transcripción:
+Transcripción completa:
 $transcripcionCorta
 
-Redacta el resumen ahora:
+Redacta el acta ahora:
 PROMPT;
 
-            $texto = $this->llamarClaude($prompt, 2048, 0.4);
+            $texto = $this->llamarClaude($prompt, 4096, 0.4);
 
             Log::info('✅ Resumen ejecutivo generado');
 
@@ -127,7 +131,7 @@ PROMPT;
 
             $this->validarApiKey();
 
-            $transcripcionCorta = $this->truncarTranscripcion($transcripcion, 6000);
+            $transcripcionCorta = $this->truncarTranscripcion($transcripcion, 14000);
             $fechaHoy           = now()->format('Y-m-d');
 
             $titulo      = $datosReunion['titulo']      ?? 'Reunión';
