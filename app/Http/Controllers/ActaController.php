@@ -589,12 +589,9 @@ class ActaController extends Controller
             ['italics' => true, 'size' => 10, 'color' => '666666']
         );
 
-        if (!file_exists(storage_path('app/public/actas'))) {
-            mkdir(storage_path('app/public/actas'), 0755, true);
-        }
-
+        // Generar en memoria y enviar directamente sin guardar en disco
         $filename  = 'acta-' . $acta->id . '.docx';
-        $tmpPath   = storage_path('app/public/actas/' . $filename);
+        $tmpPath   = tempnam(sys_get_temp_dir(), 'docx_') . '.docx';
         $objWriter = IOFactory::createWriter($phpWord, 'Word2007');
         $objWriter->save($tmpPath);
 
