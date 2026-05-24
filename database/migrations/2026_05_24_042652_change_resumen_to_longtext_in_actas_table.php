@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::table('actas', function (Blueprint $table) {
             $table->longText('resumen')->nullable()->change();
-            $table->longText('contenido')->nullable()->change();
         });
     }
 
@@ -18,7 +17,6 @@ return new class extends Migration
     {
         Schema::table('actas', function (Blueprint $table) {
             $table->string('resumen')->nullable()->change();
-            $table->string('contenido')->nullable()->change();
         });
     }
 };
