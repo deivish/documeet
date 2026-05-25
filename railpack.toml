@@ -1,2 +1,0 @@
-[phases.extensions]
-cmds = ["install-php-extensions zip ctype curl dom fileinfo filter hash mbstring openssl pcre pdo session tokenizer xml pdo_mysql gd bcmath"]
